@@ -31,13 +31,18 @@ the immersive dashboard.
 | `deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz` | The launcher: its shell rail, the sidebar seats it owns, its catalog, and the dashboard. |
 
 Install all six in one command — only the harness package is a profile layer;
-the other five are mounted by the rows it patches.
+the other five are mounted by the rows it patches. That command needs Node.js,
+**pnpm** and the `dsh` CLI in place first, because `dsh plugin` forwards to
+pnpm: with no pnpm on `PATH` it exits 127, and a fresh Node install on Windows
+does not bring pnpm. Both spellings of the command — bash/zsh and PowerShell —
+are in the [README](https://github.com/LeoEthanZ/dsh-beyond-glass#install).
 
 ## Compatibility
 
 Built against `@deepseek-ai/dsh@0.1.5-rc.2`, verified on `0.1.5-rc.2` (npm
-`latest`). Installing builds the `web` profile under `~/.dsh/profiles/web`; it
-leaves your harness install alone, and removes cleanly.
+`latest`). Installing builds a profile of its own — `glass` in the examples,
+under `~/.dsh/profiles/glass` — which leaves your harness install alone and
+removes cleanly.
 
 ## Verified on a clean install
 
@@ -97,9 +102,14 @@ package.
 | `deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz` | 启动台：外壳竖栏、它负责的那几栏侧栏、装完时的清单，以及数据仪表。 |
 
 六个包请一次装完 —— 只有 harness 那个是 profile layer，另外五个挂在它 patch 出来的行上。
+这条命令需要先装好 Node.js、**pnpm** 和 `dsh`：`dsh plugin` 底下转发给的就是 pnpm，`PATH`
+上没有它，命令会以退出码 127 失败，而 Windows 上装完 Node 默认就是没有 pnpm。两条命令
+（`bash`/`zsh` 和 PowerShell）都在
+[README](https://github.com/LeoEthanZ/dsh-beyond-glass#install) 里。
 
 **兼容性**：按 `@deepseek-ai/dsh@0.1.5-rc.2` 构建，在 `0.1.5-rc.2`（npm 的 `latest`）上验证通过。
-安装会在 `~/.dsh/profiles/web` 下建 `web` profile，不影响你的 harness 本体，也能干净卸载。
+安装会建它自己的 profile —— 示例里叫 `glass`，落在 `~/.dsh/profiles/glass` —— 不影响你的
+harness 本体，也能干净卸载。
 
 **干净安装上的实测**：全新 `DSH_HOME` + npm `latest` 的官方包，装六个 tarball 后 —— 启动台渲染
 9 张卡，名称与封面 preset 与清单文件一致，九张封面全部 `200 image/webp`、无失败请求；
