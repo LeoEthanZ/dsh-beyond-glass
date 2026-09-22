@@ -99,15 +99,9 @@ All six packages go in **one** `add`, because only the `harness` package is a pr
 mounts the other five. Installing them one at a time works too, but only the last one is a layer
 and the rest degrade to plain dependencies.
 
-`BASE` is one Release's download prefix. Set it the way your shell wants:
-
-```sh
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
-```
-
-```powershell
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
-```
+`BASE` is one Release's download prefix. Each block below sets it in its own shell's syntax,
+immediately before the command that uses it, so a block is complete on its own and can be copied
+whole.
 
 Every command below is given twice, `bash`/`zsh` and PowerShell. Take the one your shell speaks —
 they are not interchangeable.
@@ -118,6 +112,8 @@ they are not interchangeable.
 
 ```sh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
@@ -134,6 +130,8 @@ dsh --profile glass
 
 ```powershell
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
@@ -166,6 +164,8 @@ If it matches, install — exactly as above, minus the harness install:
 **macOS / Linux — `bash`, `zsh`**
 
 ```sh
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
   $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
@@ -180,6 +180,8 @@ dsh --profile glass
 **Windows — PowerShell**
 
 ```powershell
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
   "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `

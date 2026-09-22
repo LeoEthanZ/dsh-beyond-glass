@@ -92,15 +92,8 @@ clone，不需要构建。`dsh plugin` 底下转发给的就是 pnpm，所以 pn
 六个包必须**一次装完**：只有 `harness` 那个是 profile layer，负责挂载另外五个。
 分开装也能装上，只不过只有最后那个是 layer，其余会退化成普通依赖。
 
-`BASE` 是同一份 Release 的下载地址。按你用的 shell 来设：
-
-```sh
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
-```
-
-```powershell
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
-```
+`BASE` 是同一份 Release 的下载地址。下面每个代码块里都自己设一遍，写的也是各自 shell 的语法，
+就在用到它的命令前面 —— 所以每个块都是完整的，整块复制就能跑。
 
 下面的命令都给了两份：`bash`/`zsh` 一份，PowerShell 一份。照你用的那个抄，两份不能混着用。
 
@@ -110,6 +103,8 @@ $BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
 ```sh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
@@ -126,6 +121,8 @@ dsh --profile glass
 
 ```powershell
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
@@ -157,6 +154,8 @@ dsh --version      # 需要 0.1.5-rc.2 或 0.1.6-alpha.2
 **macOS / Linux —— `bash`、`zsh`**
 
 ```sh
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
   $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
@@ -171,6 +170,8 @@ dsh --profile glass
 **Windows —— PowerShell**
 
 ```powershell
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
   "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `

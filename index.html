@@ -448,10 +448,15 @@
     background: rgba(3, 6, 12, .78);
     overflow: hidden;
   }
+  /* A download URL is wider than a column, so a long line wraps onto an
+     indented continuation line instead of being cut off at the edge. */
   .code pre {
     margin: 0;
-    padding: 14px 46px 14px 16px;
+    padding: 14px 46px 14px calc(16px + 1.3em);
     overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    text-indent: -1.3em;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 12.4px;
     line-height: 1.75;
@@ -660,15 +665,6 @@
       <h2 data-i18n="install.title">Install</h2>
       <p class="lead" data-i18n="install.lead">Node.js, <code>pnpm</code> and the <code>dsh</code> command — <code>dsh plugin</code> forwards to pnpm, so pnpm has to be on <code>PATH</code>. No clone, no build. All six packages go in at once — one of them is the profile layer that mounts the other five.</p>
 
-      <div class="code" style="max-width:640px;margin:0 0 28px">
-        <pre><span class="c"># macOS / Linux — bash, zsh</span>
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
-
-<span class="c"># Windows — PowerShell</span>
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"</pre>
-        <button class="copy" type="button" aria-label="Copy">⧉</button>
-      </div>
-
       <div class="steps">
         <div>
           <h3 data-i18n="install.a.title">A. You have not installed the harness</h3>
@@ -676,6 +672,8 @@ $BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
           <div class="code">
             <pre data-copy="a"># macOS / Linux — bash, zsh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
@@ -692,6 +690,8 @@ dsh --profile glass</pre>
           <div class="code" style="margin-top:12px">
             <pre data-copy="a-win"># Windows — PowerShell
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
@@ -713,6 +713,8 @@ dsh --profile glass</pre>
             <pre data-copy="b"># macOS / Linux — bash, zsh
 dsh --version      # 0.1.5-rc.2 or 0.1.6-alpha.2
 
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
   $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
@@ -728,6 +730,8 @@ dsh --profile glass</pre>
           <div class="code" style="margin-top:12px">
             <pre data-copy="b-win"># Windows — PowerShell
 dsh --version      # 0.1.5-rc.2 or 0.1.6-alpha.2
+
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
