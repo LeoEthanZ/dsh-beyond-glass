@@ -17,16 +17,18 @@
     --panel-solid: rgba(8, 12, 21, .88);
     --accent: #538dca;
     --radius: 18px;
-    /* The centre window. It straddles the fold on purpose: the headline gets a
-       whole screen to breathe in, and the window is cut by the black band, so
-       the wallpaper behind it reads as a layer rather than a backdrop. `--hang`
-       is how much of it falls past the fold — the headline's slack and the
-       black band's padding are both derived from it, so the geometry lives in
-       one place. Capped by width and by the gutter; free of any one-screen
-       budget, which is what lets it be this large. */
+    /* The centre window, cut by the fold rather than surrounded by it — that
+       cut is what makes the wallpaper behind it read as a layer and not a
+       backdrop. `--hang` is the one number behind the geometry: how far the
+       window's bottom edge dips past the fold. The headline's slack and the
+       black band's top pad are both derived from it. At 0.22 the first screen
+       holds about two thirds of the window (the header eats a little); the
+       point is that the window is legible before anyone scrolls. Capped by
+       width and by the gutter; free of any one-screen budget, which is what
+       lets it be this large. */
     --shot: min(1400px, 92vw, max(680px, calc((100svh - 240px) * 1.778)));
     --frameh: calc(var(--shot) * 9 / 16 + 34px);
-    --hang: calc((var(--shot) * 9 / 16 + 34px) * 0.56);
+    --hang: calc((var(--shot) * 9 / 16 + 34px) * 0.22);
   }
 
   * { box-sizing: border-box; }
@@ -314,10 +316,13 @@
     background-position: center;
     background-repeat: no-repeat;
     cursor: pointer;
-    opacity: .55;
+    /* At 36px wide a wallpaper is nearly its own average colour, and most of
+       these average out pale. Held this high so the nine still read as nine
+       different pictures rather than nine grey squares. */
+    opacity: .7;
     transition: opacity .25s ease, border-color .25s ease, transform .25s ease;
   }
-  .thumbs button:hover { opacity: .95; }
+  .thumbs button:hover { opacity: .97; }
   .thumbs button[aria-current="true"] {
     opacity: 1;
     border-color: var(--accent);
@@ -339,6 +344,11 @@
     position: relative;
     z-index: 2;
     background: #05080e;
+    /* Measured, not reasoned: the window's bottom edge sits exactly `--hang`
+       below the fold, because a negative bottom margin on a flex item shrinks
+       the hero's content height instead of lifting the band that follows it —
+       the band's top stays on the fold. (Block layout would have moved it.) So
+       one `--hang` of pad, then air before the first section. */
     padding-top: calc(var(--hang) + clamp(20px, 4vh, 52px));
   }
 
@@ -349,7 +359,9 @@
   .band:first-child { border-top: 0; }
   .band.dense { background: rgba(3, 5, 10, .6); }
 
-  .wrap { max-width: 1080px; margin: 0 auto; }
+  /* As wide as the window, so everything below the fold lines up with its
+     edges instead of sitting in a column of its own. */
+  .wrap { max-width: var(--shot); margin: 0 auto; }
 
   h2 {
     margin: 0 0 6px;
