@@ -1285,6 +1285,26 @@ const heroWanted = () =>
 /** Whether the page is showing the wallpaper the recording was made on. */
 const heroFits = () => heroWanted() && WALLPAPERS[index].id === HERO_WALLPAPER;
 
+/** Whether anything has shown that somebody is reading this page. */
+let heroSeen = document.visibilityState === "visible";
+
+// Armed only where the visibility rule declines, and only until it is used:
+// a document that reports itself hidden and never changes its mind would
+// otherwise decline the pass for good.
+let heroContactArmed = false;
+function watchForContact() {
+  if (heroContactArmed) return;
+  heroContactArmed = true;
+  const contact = () => {
+    document.removeEventListener("pointerdown", contact, true);
+    document.removeEventListener("keydown", contact, true);
+    heroSeen = true;
+    startHero();
+  };
+  document.addEventListener("pointerdown", contact, true);
+  document.addEventListener("keydown", contact, true);
+}
+
 /**
  * Bring the recording up from its first frame. Safe to call at any time: it does
  * nothing if there is no cue file, this window does not fit, or it is already
@@ -1293,9 +1313,12 @@ const heroFits = () => heroWanted() && WALLPAPERS[index].id === HERO_WALLPAPER;
 function startHero() {
   if (hero.state === "playing" || hero.cues.length === 0 || !heroFits()) return;
   // A pass that starts on a page nobody is looking at is a pass spent on
-  // nobody, and a preview pane loading behind the editor is exactly that. It
-  // waits; `visibilitychange` below starts it when the page is seen.
-  if (document.visibilityState === "hidden") return;
+  // nobody, and a preview pane loading behind the editor is exactly that. What
+  // it must not be is a pass nobody can ever get: `visibilitychange` takes it
+  // when the page appears, and so does the visitor's first gesture — a document
+  // that says it is hidden and never changes its mind is not a document nobody
+  // is reading.
+  if (document.visibilityState === "hidden" && !heroSeen) { watchForContact(); return; }
   hero.state = "playing";
   hero.next = 0;
   const el = els.hero;
@@ -1380,7 +1403,10 @@ async function offerHero() {
  * Becoming visible takes the pass that `startHero` declined.
  */
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") startHero();
+  if (document.visibilityState === "visible") {
+    heroSeen = true;
+    startHero();
+  }
 });
 
 /**
