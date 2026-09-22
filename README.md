@@ -115,6 +115,9 @@ npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
 BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 
+# create the profile first (plain add leaves it with no app layer)
+dsh --profile glass --from-default-profile web --dump-config > /dev/null
+
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
   $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
@@ -133,6 +136,9 @@ npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
 $BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
+# create the profile first (plain add leaves it with no app layer)
+dsh --profile glass --from-default-profile web --dump-config > $null
+
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
   "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
@@ -148,8 +154,10 @@ Each backtick is PowerShell's line continuation, and it has to be the last chara
 one space after it and the command breaks. In `cmd.exe` neither block works as written; use
 PowerShell.
 
-The `add` command creates `~/.dsh/profiles/glass` (`%USERPROFILE%\.dsh\profiles\glass` on Windows).
-`glass` is just a profile name — pick another if you like.
+The `--from-default-profile web` line creates `~/.dsh/profiles/glass`
+(`%USERPROFILE%\.dsh\profiles\glass` on Windows) carrying the same app layer a stock `dsh web`
+profile has; `add` then puts the six packages on top. `glass` is just a profile name — pick another
+if you like.
 
 ### The harness is already installed
 
@@ -165,6 +173,9 @@ If it matches, install — exactly as above, minus the harness install:
 
 ```sh
 BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+
+# create the profile first (plain add leaves it with no app layer)
+dsh --profile glass --from-default-profile web --dump-config > /dev/null
 
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
@@ -182,6 +193,9 @@ dsh --profile glass
 ```powershell
 $BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
+# create the profile first (plain add leaves it with no app layer)
+dsh --profile glass --from-default-profile web --dump-config > $null
+
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
   "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
@@ -197,12 +211,15 @@ dsh --profile glass
 settings — is not touched, and your `dsh` keeps working the way it did. Reach this UI with
 `dsh --profile glass`; keep typing your usual command to reach yours.
 
-Two things to watch:
+Three things to watch:
 
 - **Do not reuse a profile name you already have.** When the name is taken, `add` stacks onto that
   daily profile instead of creating a new one. Pick an unused name (the examples use `glass`).
 - **On any other harness version** this UI is untested. Pin to a tested one first:
   `npm install -g @deepseek-ai/dsh@0.1.5-rc.2`.
+- **`dsh --profile glass` printing nothing** means the profile was built by `add` alone and has no
+  app layer in it. Delete `~/.dsh/profiles/glass` and run the whole block above again — the profile
+  creation line is what makes it boot.
 
 ### Remove
 

@@ -106,6 +106,9 @@ npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
 BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 
+# 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
+dsh --profile glass --from-default-profile web --dump-config > /dev/null
+
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
   $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
@@ -124,6 +127,9 @@ npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
 $BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
+# 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
+dsh --profile glass --from-default-profile web --dump-config > $null
+
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
   "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
@@ -138,7 +144,8 @@ dsh --profile glass
 PowerShell 里面的反引号是续行符，必须是那一行的最后一个字符 —— 后面多一个空格，命令就断了。
 `cmd.exe` 里两份都跑不通，用 PowerShell。
 
-上面的 `add` 会建好 `~/.dsh/profiles/glass`（Windows 上是 `%USERPROFILE%\.dsh\profiles\glass`）；
+`--from-default-profile web` 那一行把 `~/.dsh/profiles/glass`（Windows 上是
+`%USERPROFILE%\.dsh\profiles\glass`）按官方 web 模板建出来，`add` 再把六个包装进去；
 `glass` 只是 profile 名，可以换成别的。
 
 ### 已经装了 harness
@@ -156,6 +163,9 @@ dsh --version      # 需要 0.1.5-rc.2 或 0.1.6-alpha.2
 ```sh
 BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 
+# 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
+dsh --profile glass --from-default-profile web --dump-config > /dev/null
+
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
   $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
@@ -172,6 +182,9 @@ dsh --profile glass
 ```powershell
 $BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
 
+# 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
+dsh --profile glass --from-default-profile web --dump-config > $null
+
 dsh plugin --profile glass add `
   "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
   "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
@@ -186,12 +199,15 @@ dsh --profile glass
 **这套界面装在一个独立 profile 里**，你原有的 profile（还是那套插件、那份设置）一个字都不动，
 `dsh` 的启动方式照旧。想用它就用 `dsh --profile glass`，不想用就继续敲原来的命令。
 
-两个坑：
+三个坑：
 
 - **别用你已经占用的 profile 名**。名字被占用时，`add` 是往你那个日常 profile 上叠，
   不是新建一个。挑一个没用过的名字（示例里是 `glass`）。
 - **版本不符**（既不是 `0.1.5-rc.2` 也不是 `0.1.6-alpha.2`）时，这套界面没测过。
   钉到测过的版本再装：`npm install -g @deepseek-ai/dsh@0.1.5-rc.2`。
+- **`dsh --profile glass` 敲下去什么都不打印**，说明这个 profile 是 `add` 单独建出来的、
+  里面没有界面层。删掉 `~/.dsh/profiles/glass` 再照上面的块整段跑一遍就好 ——
+  建 profile 那一行就是它能不能起来的关键。
 
 ### 卸载
 
