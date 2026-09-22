@@ -1,0 +1,15 @@
+{
+  "source": "bgs-hero-loop.mjs + bgs-hero-encode.mjs",
+  "duration": 9.56,
+  "note": "seconds into the video, at the click that asked for each wallpaper — the moment the interface starts changing, so the field behind the frame can change with it.",
+  "cues": [
+    {
+      "t": 1.65,
+      "id": "nature-cinematic-snow"
+    },
+    {
+      "t": 5.98,
+      "id": "fluid-deep-ocean"
+    }
+  ]
+}

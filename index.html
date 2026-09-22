@@ -252,7 +252,12 @@
   }
 
   .plate { position: absolute; inset: 34px 0 0; background: #0a1120; }
-  .plate img {
+  /* The stills, and the loop laid over them. The plate is exactly 16:9 — the
+     frame is `--shot` wide and its top 34px are the title bar — which is the
+     recording's own ratio, so the loop lands on the same geometry the stills
+     are cropped to and nothing moves at the handoff. */
+  .plate img,
+  .plate video {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -262,7 +267,8 @@
     opacity: 0;
     transition: opacity .45s ease;
   }
-  .plate img.is-on { opacity: 1; }
+  .plate img.is-on,
+  .plate video.is-on { opacity: 1; }
 
   /* The switcher is a control card pinned just above the window's top edge,
      where a floating toolbar would sit. It shows the wallpapers themselves —
@@ -469,6 +475,35 @@
   .code .copy:hover { color: var(--ink); border-color: rgba(255, 255, 255, .3); }
   .code .copy.done { color: #8ce0b0; border-color: rgba(140, 224, 176, .5); }
 
+  /* The star, asked for once and only after the thing it is asking about has
+     been explained: the end of the install section. Not on the first screen,
+     not a banner, not a modal. The footer carries the same link, quietly, for
+     anyone who arrives at the bottom by a different road. */
+  .star {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 24px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+  }
+  .star p { margin: 0; max-width: 46ch; color: var(--dim); font-size: 14px; }
+  .star a {
+    flex: 0 0 auto;
+    font-size: 14px;
+    font-weight: 560;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 10px 18px;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: rgba(9, 14, 24, .5);
+    transition: background .2s;
+  }
+  .star a:hover { background: rgba(9, 14, 24, .85); }
+
   footer {
     position: relative;
     z-index: 2;
@@ -515,7 +550,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .plate img, .thumbs button, .stage > video, .stage > canvas { transition: none; }
+    .plate img, .plate video, .thumbs button, .stage > video, .stage > canvas { transition: none; }
   }
 </style>
 </head>
@@ -564,6 +599,7 @@
         <div class="plate">
           <img id="shotA" alt="" decoding="async" fetchpriority="high">
           <img id="shotB" alt="" decoding="async">
+          <video id="hero" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
         </div>
       </div>
     </div>
@@ -675,6 +711,11 @@ dsh --profile glass</pre>
         <li data-i18n="install.tip2"><b>Your current setup is untouched.</b> The UI lives in the new profile; run it with <code>dsh --profile glass</code> and your usual command still behaves as before.</li>
         <li data-i18n="install.tip3"><b>To remove it:</b> <code>dsh plugin --profile glass remove</code> the six package names, or delete <code>~/.dsh/profiles/glass</code>.</li>
       </ul>
+
+      <div class="star">
+        <p data-i18n="star.why">If this saves you an evening, a star is the whole payment for it.</p>
+        <a href="https://github.com/LeoEthanZ/dsh-beyond-glass" data-i18n="star.action">★ Star on GitHub</a>
+      </div>
     </div>
   </section>
   </div>
@@ -686,6 +727,7 @@ dsh --profile glass</pre>
     <span data-i18n="foot.coverr">Nature wallpapers: footage from Coverr, commercial use, no attribution required.</span>
     <span data-i18n="foot.fluid">Fluid wallpapers run the harness's own WebGL shader, extracted verbatim.</span>
     <a href="https://github.com/LeoEthanZ/dsh-beyond-glass/blob/main/LICENSE" data-i18n="foot.link">License and notices</a>
+    <a href="https://github.com/LeoEthanZ/dsh-beyond-glass" data-i18n="star.action">★ Star on GitHub</a>
   </div>
 </footer>
 
@@ -809,6 +851,8 @@ const COPY = {
     "install.tip1": "<b>Pick an unused profile name.</b> If the name is taken, <code>add</code> stacks onto that existing profile instead of creating a new one. <code>glass</code> is only an example.",
     "install.tip2": "<b>Your current setup is untouched.</b> The UI lives in the new profile; run it with <code>dsh --profile glass</code> and your usual command still behaves as before.",
     "install.tip3": "<b>To remove it:</b> <code>dsh plugin --profile glass remove</code> the six package names, or delete <code>~/.dsh/profiles/glass</code>.",
+    "star.why": "If this saves you an evening, a star is the whole payment for it.",
+    "star.action": "★ Star on GitHub",
     "foot.license": "MIT, same as the harness it builds on.",
     "foot.coverr": "Nature wallpapers: footage from Coverr, commercial use, no attribution required.",
     "foot.fluid": "Fluid wallpapers run the harness's own WebGL shader, extracted verbatim.",
@@ -845,6 +889,8 @@ const COPY = {
     "install.tip1": "<b>挑一个没被占用的 profile 名。</b> 名字被占用时 <code>add</code> 是叠到那个既有 profile 上，而不是新建。<code>glass</code> 只是示例。",
     "install.tip2": "<b>你现有的环境一个字不动。</b> 界面住在新的 profile 里：用 <code>dsh --profile glass</code> 启动它，你原来的命令照旧。",
     "install.tip3": "<b>卸载：</b> <code>dsh plugin --profile glass remove</code> 那六个包名，或直接删掉 <code>~/.dsh/profiles/glass</code> 目录。",
+    "star.why": "如果它帮你省下一个晚上，一颗星就是全部的回报。",
+    "star.action": "★ 在 GitHub 点星",
     "foot.license": "MIT，与它所基于的 harness 一致。",
     "foot.coverr": "自然风光壁纸：素材来自 Coverr，可商用、免署名。",
     "foot.fluid": "流体壁纸跑的是 harness 自己的 WebGL 着色器，原样抽取。",
@@ -1090,6 +1136,7 @@ const els = {
   rail: document.getElementById("rail"),
   shotA: document.getElementById("shotA"),
   shotB: document.getElementById("shotB"),
+  hero: document.getElementById("hero"),
   wname: document.getElementById("wname"),
   wpos: document.getElementById("wpos"),
   wallbar: document.getElementById("wallbar"),
@@ -1139,7 +1186,7 @@ function showShot(w) {
   next.decode().then(commit, commit);
 }
 
-function select(next, { push = true } = {}) {
+function select(next, { push = true, quiet = false } = {}) {
   index = (next + WALLPAPERS.length) % WALLPAPERS.length;
   const w = WALLPAPERS[index];
 
@@ -1147,7 +1194,12 @@ function select(next, { push = true } = {}) {
   // window shot. It is the base the live layers sit on, and the whole
   // background if they cannot run.
   els.wash.style.backgroundImage = `url("${thumbOf(w)}")`;
-  showShot(w);
+  // `quiet` is for the hero loop's cues. The recording *is* this wallpaper, so
+  // the page only has to agree with it — and agreeing should not cost a still
+  // that the recording is covering, or a 720p nature loop pulled in to paint a
+  // field that is blurred past recognition. A fluid costs nothing, so it is
+  // left alone: the field stays live under the whole loop.
+  if (!quiet) showShot(w);
 
   if (w.kind === "fluid" && fluid !== null) {
     fluid.setPalette(w);
@@ -1156,10 +1208,12 @@ function select(next, { push = true } = {}) {
   } else if (w.kind === "video") {
     els.canvas.classList.remove("is-on");
     els.video.classList.remove("is-on");
-    if (els.video.getAttribute("src") !== w.video) els.video.src = w.video;
-    els.video.play().then(() => {
-      if (WALLPAPERS[index].id === w.id) els.video.classList.add("is-on");
-    }, () => { /* Offline: the wash still carries the wallpaper. */ });
+    if (!quiet) {
+      if (els.video.getAttribute("src") !== w.video) els.video.src = w.video;
+      els.video.play().then(() => {
+        if (WALLPAPERS[index].id === w.id) els.video.classList.add("is-on");
+      }, () => { /* Offline: the wash still carries the wallpaper. */ });
+    }
   }
 
   paintCaption();
@@ -1170,6 +1224,94 @@ function select(next, { push = true } = {}) {
   }
 }
 
+/* ── The hero loop ──────────────────────────────────────────────────────── */
+
+/**
+ * The window opens as a still and, on a desktop that has not asked for less
+ * motion, becomes a recording of the real shell doing the three things a still
+ * cannot show: folding a column away, changing the wallpaper, and switching on
+ * the data island.
+ *
+ * Three rules, all of them about not taking anything away from the visitor:
+ *
+ *   - **It only plays on the wallpaper it was recorded on.** Its first frame is
+ *     that wallpaper; playing it over a visitor's own selection would have the
+ *     window contradict the label above it.
+ *   - **The field follows the recording's own cue times**, so the wallpaper
+ *     around the window stays the wallpaper inside it. The cue times come from
+ *     `assets/hero-cues.json`, written by the recorder — and if that file cannot
+ *     be read (the page reviewed straight off the filesystem), there is no loop
+ *     at all, because a frame that changes wallpaper over a field that does not
+ *     is worse than a still.
+ *   - **The visitor's first click ends it, for good.** After that the window is
+ *     theirs: the still, the thumbnails, the arrow keys.
+ *
+ * The recording is 1.2MB, so it waits for the page to be idle — the still is
+ * the largest thing on the first screen and it should not be raced.
+ */
+const hero = { done: false, playing: false, cues: [], next: 0 };
+
+// The wallpaper the recording was made on, and the one it returns to. Named
+// rather than assumed to be the first entry: the panel's order is a product
+// decision, and this is a fact about a video file.
+const HERO_WALLPAPER = "fluid-deep-ocean";
+
+const heroFits = () =>
+  !hero.done &&
+  WALLPAPERS[index].id === HERO_WALLPAPER &&
+  window.innerWidth >= 1000 &&
+  !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  navigator.connection?.saveData !== true;
+
+/** A visitor's choice: the loop ends here and the window is handed back. */
+function pick(i) {
+  hero.done = true;
+  if (hero.playing) {
+    els.hero.pause();
+    els.hero.classList.remove("is-on");
+    hero.playing = false;
+  }
+  select(i);
+}
+
+function heroCue() {
+  const t = els.hero.currentTime;
+  while (hero.next < hero.cues.length && t >= hero.cues[hero.next].t) {
+    const at = WALLPAPERS.findIndex((w) => w.id === hero.cues[hero.next].id);
+    // `quiet`, and no history push: the address bar keeps naming what the
+    // visitor chose, while the page itself agrees with the window.
+    if (at !== -1) select(at, { push: false, quiet: true });
+    hero.next += 1;
+  }
+}
+
+async function offerHero() {
+  if (!heroFits()) return;
+  let cues = [];
+  try {
+    const res = await fetch("assets/hero-cues.json");
+    if (res.ok) cues = (await res.json()).cues ?? [];
+  } catch { /* reviewed from file:// */ }
+  if (cues.length === 0 || !heroFits()) return;
+
+  hero.cues = cues;
+  els.hero.addEventListener("timeupdate", heroCue);
+  els.hero.addEventListener("playing", () => {
+    hero.playing = true;
+    els.hero.classList.add("is-on");
+  }, { once: true });
+  els.hero.addEventListener("ended", () => {
+    // It ends on the wallpaper it began on, which the still underneath is
+    // already showing, so it can fade out and leave the page where it found it.
+    hero.playing = false;
+    hero.done = true;
+    els.hero.classList.remove("is-on");
+  });
+  els.hero.src = "assets/hero-loop.mp4";
+  // A refused autoplay is not an error: the still is the page's resting state.
+  els.hero.play().catch(() => {});
+}
+
 for (const [i, w] of WALLPAPERS.entries()) {
   const button = document.createElement("button");
   button.type = "button";
@@ -1178,7 +1320,7 @@ for (const [i, w] of WALLPAPERS.entries()) {
   // The wallpaper on its own. Cropping the window shot instead only ever
   // showed the wallpaper through three panes of glass.
   button.style.backgroundImage = `url("${thumbOf(w)}")`;
-  button.addEventListener("click", () => select(i));
+  button.addEventListener("click", () => pick(i));
   els.rail.append(button);
 }
 
@@ -1186,11 +1328,11 @@ els.lang.addEventListener("click", () => { lang = lang === "en" ? "zh" : "en"; a
 
 window.addEventListener("keydown", (event) => {
   if (event.metaKey || event.ctrlKey || event.altKey) return;
-  if (event.key === "ArrowLeft") { select(index - 1); event.preventDefault(); }
-  if (event.key === "ArrowRight") { select(index + 1); event.preventDefault(); }
+  if (event.key === "ArrowLeft") { pick(index - 1); event.preventDefault(); }
+  if (event.key === "ArrowRight") { pick(index + 1); event.preventDefault(); }
   const digit = Number.parseInt(event.key, 10);
   if (Number.isInteger(digit) && digit >= 1 && digit <= WALLPAPERS.length) {
-    select(digit - 1);
+    pick(digit - 1);
     event.preventDefault();
   }
 });
@@ -1227,6 +1369,13 @@ if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
 applyLang();
 const wanted = WALLPAPERS.findIndex((w) => w.id === location.hash.slice(1));
 select(wanted === -1 ? 0 : wanted, { push: false });
+
+// The still is the largest thing on the first screen, and the one the visitor
+// is looking at; the loop is another megabyte behind it. So the loop waits for
+// the page to be idle rather than racing the still it is about to replace.
+const startHero = () => { offerHero(); };
+if ("requestIdleCallback" in window) window.requestIdleCallback(startHero, { timeout: 1400 });
+else setTimeout(startHero, 700);
 </script>
 </body>
 </html>

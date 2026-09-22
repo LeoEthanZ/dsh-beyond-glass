@@ -7,7 +7,8 @@
 [English →](README.md)
 
 **[在线展示页 →](https://leoethanz.github.io/dsh-beyond-glass/)** —— 九张壁纸一页看完，
-点一下就换；中间那一帧的四周是同色流体，实时在跑。
+点一下就换；中间那一帧的四周是同色流体，实时在跑。窗口进来时会自己放九秒录屏：收起一栏、
+换一张壁纸、打开数据仪表，放完交回静态截图。
 
 ![三栏总览](docs/01-shell-three-columns.jpg)
 
