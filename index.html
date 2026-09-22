@@ -1243,35 +1243,75 @@ function select(next, { push = true, quiet = false } = {}) {
  *     be read (the page reviewed straight off the filesystem), there is no loop
  *     at all, because a frame that changes wallpaper over a field that does not
  *     is worse than a still.
- *   - **The visitor's first click ends it, for good.** After that the window is
- *     theirs: the still, the thumbnails, the arrow keys.
+ *   - **A pass is not spent on whoever happened to be looking.** Nine seconds of
+ *     recording that play once and never again are wasted on the visitor who
+ *     scrolled past before the 1.2MB arrived — on a slow line, most of them.
+ *     Arriving back at the wallpaper it was made on starts it again: coming back
+ *     up to the first screen, or picking that wallpaper after trying another
+ *     colour first. Picking any other wallpaper ends the pass and hands the
+ *     window over until they come back to this one.
  *
- * The recording is 1.2MB, so it waits for the page to be idle — the still is
- * the largest thing on the first screen and it should not be raced.
+ * The recording is 1.2MB, so the first offer waits for the page to be idle — the
+ * still is the largest thing on the first screen and it should not be raced.
  */
-const hero = { done: false, playing: false, cues: [], next: 0 };
+
+/** "ready" is eligible for a pass: never played, or finished and handed back. */
+const hero = { state: "ready", away: false, cues: [], next: 0, watcher: null };
 
 // The wallpaper the recording was made on, and the one it returns to. Named
 // rather than assumed to be the first entry: the panel's order is a product
 // decision, and this is a fact about a video file.
 const HERO_WALLPAPER = "fluid-deep-ocean";
 
-const heroFits = () =>
-  !hero.done &&
-  WALLPAPERS[index].id === HERO_WALLPAPER &&
+/** Whether this device wants a loop at all. The device, not the choice. */
+const heroWanted = () =>
   window.innerWidth >= 1000 &&
   !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
   navigator.connection?.saveData !== true;
 
-/** A visitor's choice: the loop ends here and the window is handed back. */
+/** Whether the page is showing the wallpaper the recording was made on. */
+const heroFits = () => heroWanted() && WALLPAPERS[index].id === HERO_WALLPAPER;
+
+/**
+ * Bring the recording up from its first frame. Safe to call at any time: it does
+ * nothing if there is no cue file, this window does not fit, or it is already
+ * running.
+ */
+function startHero() {
+  if (hero.state === "playing" || hero.cues.length === 0 || !heroFits()) return;
+  hero.state = "playing";
+  hero.next = 0;
+  const el = els.hero;
+  if (el.getAttribute("src") === null) {
+    el.src = "assets/hero-loop.mp4";
+  } else if (el.readyState > 0) {
+    // Rewind rather than resume. The pass the visitor asked for is the whole
+    // pass, and one that was interrupted three seconds in has three seconds of
+    // cues the field has already been taken through.
+    try { el.currentTime = 0; } catch { /* not seekable yet */ }
+  }
+  // A refused autoplay is not an error: the still is the page's resting state.
+  el.play().catch(() => { hero.state = "ready"; });
+}
+
+/**
+ * A visitor's own choice. Any other wallpaper ends the pass and hands the window
+ * over; the one the recording was made on starts a pass — which is also how
+ * someone who tried another colour and came back to this one gets to see it
+ * again, and how they get a second look without a replay button.
+ */
 function pick(i) {
-  hero.done = true;
-  if (hero.playing) {
+  const w = WALLPAPERS[(i + WALLPAPERS.length) % WALLPAPERS.length];
+  if (w.id !== HERO_WALLPAPER) {
+    hero.state = "taken";
     els.hero.pause();
     els.hero.classList.remove("is-on");
-    hero.playing = false;
   }
   select(i);
+  if (w.id === HERO_WALLPAPER) {
+    hero.state = "ready";
+    startHero();
+  }
 }
 
 function heroCue() {
@@ -1286,30 +1326,50 @@ function heroCue() {
 }
 
 async function offerHero() {
-  if (!heroFits()) return;
+  // The cue file is fetched for the device rather than for the current choice:
+  // 250 bytes now is what lets someone who wandered off to another wallpaper and
+  // came back still get a pass. Phones and reduced-motion readers never ask.
+  if (!heroWanted()) return;
   let cues = [];
   try {
     const res = await fetch("assets/hero-cues.json");
     if (res.ok) cues = (await res.json()).cues ?? [];
   } catch { /* reviewed from file:// */ }
-  if (cues.length === 0 || !heroFits()) return;
+  if (cues.length === 0) return;
 
   hero.cues = cues;
   els.hero.addEventListener("timeupdate", heroCue);
-  els.hero.addEventListener("playing", () => {
-    hero.playing = true;
-    els.hero.classList.add("is-on");
-  }, { once: true });
+  els.hero.addEventListener("playing", () => els.hero.classList.add("is-on"));
   els.hero.addEventListener("ended", () => {
     // It ends on the wallpaper it began on, which the still underneath is
     // already showing, so it can fade out and leave the page where it found it.
-    hero.playing = false;
-    hero.done = true;
+    hero.state = "ready";
     els.hero.classList.remove("is-on");
   });
-  els.hero.src = "assets/hero-loop.mp4";
-  // A refused autoplay is not an error: the still is the page's resting state.
-  els.hero.play().catch(() => {});
+  watchHero();
+  startHero();
+}
+
+/**
+ * The other way a pass comes round: away and back. Measured on the frame rather
+ * than on the section — the frame is what the first screen is, and it fits a
+ * viewport by construction, so a ratio of 1 is reachable. A section can be
+ * taller than the window, and a threshold it can never cross would never fire.
+ */
+function watchHero() {
+  const stage = document.querySelector(".stagebox");
+  if (!("IntersectionObserver" in window) || stage === null) return;
+  hero.watcher = new IntersectionObserver(([entry]) => {
+    const ratio = entry.intersectionRatio;
+    if (ratio === 0) { hero.away = true; return; }
+    if (hero.away && ratio >= 0.5) {
+      hero.away = false;
+      // Only when they are back on the wallpaper it was made on: someone who
+      // chose another colour meant it, and scrolling does not undo a choice.
+      if (hero.state === "ready") startHero();
+    }
+  }, { threshold: [0, 0.5] });
+  hero.watcher.observe(stage);
 }
 
 for (const [i, w] of WALLPAPERS.entries()) {
@@ -1373,9 +1433,9 @@ select(wanted === -1 ? 0 : wanted, { push: false });
 // The still is the largest thing on the first screen, and the one the visitor
 // is looking at; the loop is another megabyte behind it. So the loop waits for
 // the page to be idle rather than racing the still it is about to replace.
-const startHero = () => { offerHero(); };
-if ("requestIdleCallback" in window) window.requestIdleCallback(startHero, { timeout: 1400 });
-else setTimeout(startHero, 700);
+const offerHeroWhenIdle = () => { offerHero(); };
+if ("requestIdleCallback" in window) window.requestIdleCallback(offerHeroWhenIdle, { timeout: 1400 });
+else setTimeout(offerHeroWhenIdle, 700);
 </script>
 </body>
 </html>

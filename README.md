@@ -9,7 +9,8 @@ a profile of their own, and removing them puts you back where you started.
 **[Live gallery →](https://leoethanz.github.io/dsh-beyond-glass/)** — all nine wallpapers in one
 page, switchable, with the fluid field running live around the frame. The window plays nine
 seconds of the shell on the way in — folding a column away, changing wallpaper, switching on
-the data island — and hands straight back to a still.
+the data island — and hands straight back to a still. Scroll back up to it, or try another
+wallpaper and return to that one, and it plays again.
 
 ![The three-column shell](docs/01-shell-three-columns.jpg)
 
