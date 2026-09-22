@@ -1264,17 +1264,21 @@ const hero = { state: "ready", away: false, cues: [], next: 0, watcher: null };
 const HERO_WALLPAPER = "fluid-deep-ocean";
 
 /**
- * Whether this device wants a loop at all. The device, not the choice.
+ * Whether this device wants a loop at all. The device — not the window.
  *
- * Not a floor of 1000px, which reads as "only a big desktop counts" and locks
- * out every window between it and the page's own phone layout at 640 — a
- * laptop window, or a preview pane, both of which can watch nine seconds as
- * well as a large window can. A landscape phone is wider than that breakpoint,
- * so the pointer is what tells those two apart.
+ * Two width floors were tried and both were wrong. 1000px refused every laptop
+ * window and every preview pane. 640px, the page's own phone breakpoint,
+ * refused them as well: a preview pane is narrower than a phone. Window size is
+ * not a device capability, and dragging a window edge should not change what
+ * the page does. What is left are the three things that are: a touch pointer, a
+ * request for less motion, and a request to save data.
+ *
+ * The pointer test is stated as a refusal rather than a requirement. Asking for
+ * `pointer: fine` means "only a device that positively says desktop", and a
+ * document rendered somewhere that reports no pointer at all is not a phone.
  */
 const heroWanted = () =>
-  window.innerWidth > 640 &&
-  window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+  !window.matchMedia("(pointer: coarse), (hover: none)").matches &&
   !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
   navigator.connection?.saveData !== true;
 
