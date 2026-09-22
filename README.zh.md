@@ -104,7 +104,7 @@ clone，不需要构建。`dsh plugin` 底下转发给的就是 pnpm，所以 pn
 ```sh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2
 
 # 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
 dsh --profile glass --from-default-profile web --dump-config > /dev/null
@@ -125,7 +125,7 @@ dsh --profile glass
 ```powershell
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2"
 
 # 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
 dsh --profile glass --from-default-profile web --dump-config > $null
@@ -161,7 +161,7 @@ dsh --version      # 需要 0.1.5-rc.2 或 0.1.6-alpha.2
 **macOS / Linux —— `bash`、`zsh`**
 
 ```sh
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2
 
 # 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
 dsh --profile glass --from-default-profile web --dump-config > /dev/null
@@ -180,7 +180,7 @@ dsh --profile glass
 **Windows —— PowerShell**
 
 ```powershell
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2"
 
 # 先把 profile 建出来（只用 add 建出来的 profile 没有界面层）
 dsh --profile glass --from-default-profile web --dump-config > $null

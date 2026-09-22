@@ -113,7 +113,7 @@ they are not interchangeable.
 ```sh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2
 
 # create the profile first (plain add leaves it with no app layer)
 dsh --profile glass --from-default-profile web --dump-config > /dev/null
@@ -134,7 +134,7 @@ dsh --profile glass
 ```powershell
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2"
 
 # create the profile first (plain add leaves it with no app layer)
 dsh --profile glass --from-default-profile web --dump-config > $null
@@ -172,7 +172,7 @@ If it matches, install — exactly as above, minus the harness install:
 **macOS / Linux — `bash`, `zsh`**
 
 ```sh
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2
 
 # create the profile first (plain add leaves it with no app layer)
 dsh --profile glass --from-default-profile web --dump-config > /dev/null
@@ -191,7 +191,7 @@ dsh --profile glass
 **Windows — PowerShell**
 
 ```powershell
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.2"
 
 # create the profile first (plain add leaves it with no app layer)
 dsh --profile glass --from-default-profile web --dump-config > $null

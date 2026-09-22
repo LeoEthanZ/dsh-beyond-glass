@@ -1,23 +1,29 @@
-# v0.1.1
+# v0.1.2
 
-The launcher now opens on a populated 启动台. Content update: the six packages
-keep the versions they had in v0.1.0, so install from this tag rather than that
-one — a `v0.1.1` URL supersedes `v0.1.0` outright.
+Three fixes for what a stranger's install sees. Content update: the six packages
+keep the versions they had in v0.1.1, so install from this tag rather than that
+one — a `v0.1.2` URL supersedes `v0.1.1` outright.
 
 ## What changed
 
-- **The launcher carries its own first-run contents.** A clean install used to
-  open on two cards — the only two that really ship an application renderer. It
-  now opens on the same nine cards the screenshots show, with their names,
-  descriptions, cover art and both categories. The catalog is injected at build
-  time into the launcher's compiled payload, from `launcher-catalog.json` beside
-  the builder, so the fork's own defaults stay untouched.
-- **The applications behind those cards are still not in the packages.** The nine
-  cards are a catalog, not software: opening one that has no application behind
-  it answers 「应用已注册但未接入」. The launcher is the container.
+- **The nine launcher cards are one size now.** A card is a `<button>`, and a
+  button is sized to its contents: with the description on a single nowrap line,
+  a card whose description was long outgrew its track — 318px inside a 223.8px
+  column — overlapping the card beside it, while the ellipsis never appeared.
+  The cards now fill their cell, so the covers line up and long descriptions
+  clip where they should.
+- **Settings opens as a full-window sheet.** The sheet renders inside the left
+  column, and that column carried the glass `backdrop-filter` — which makes an
+  element the containing block for its own fixed-position descendants. The sheet
+  was therefore held to the column's box: 264×884 inside a 1440×900 window. The
+  refraction now rides a pseudo-element, so the column no longer captures it.
+- **The skin is dark on a light machine.** Theme preference defaults to `system`,
+  so a light-mode host turned the shell light and both side columns came out
+  white. The skin now reads `system` as dark. Picking Light or Dark in Appearance
+  still does exactly what it says.
 
-Everything else is v0.1.0: the three-column glass shell, the wallpaper column,
-the immersive dashboard.
+Everything else is v0.1.1: the three-column glass shell, the wallpaper column,
+the immersive dashboard, and the nine-card catalog.
 
 ## Files
 
@@ -46,8 +52,16 @@ removes cleanly.
 
 ## Verified on a clean install
 
-Six tarballs into a fresh `DSH_HOME` over the published `@deepseek-ai/dsh@latest`:
+Six tarballs, fetched by their public URLs into a fresh `DSH_HOME` over the
+published `@deepseek-ai/dsh@latest`:
 
+- **The nine cards render at one width** — 223.8px each, one per grid track,
+  zero overlapping pairs — and every cover measures 223.8×125.9 (16:9). The
+  three long descriptions clip.
+- **The settings sheet measures 1440×900 at 0,0** — full window, and the column
+  it renders inside no longer carries a containing-block property.
+- **On a host set to light mode the shell still renders dark** — `body` at
+  `rgb(5,8,14)`, `color-scheme: dark`, with the same result on a dark host.
 - 9 cards rendered, names and cover presets matching the catalog file, all nine
   covers served `200 image/webp`, no failed requests.
 - `/trending` `200`, `/weather` `200`, `/workbench/covers/*.webp` `200`, and a
@@ -75,20 +89,23 @@ package.
 
 ---
 
-# v0.1.1（中文）
+# v0.1.2（中文）
 
-启动台现在装完就是满的。内容更新：六个包的版本号与 v0.1.0 相同，所以请从本 tag 安装 ——
-`v0.1.1` 的地址完全取代 `v0.1.0`。
+这一版修的是「换个干净环境装一遍才会看见的三个毛病」。内容更新：六个包的版本号与 v0.1.1 相同，
+所以请从本 tag 安装 —— `v0.1.2` 的地址完全取代 `v0.1.1`。
 
 ## 改了什么
 
-- **启动台自带首屏内容。** 以前干净安装打开是两张卡（只有那两个真带应用渲染器）；现在打开
-  就是截图里那九张，名称、说明、封面与两个类目都随包提供。清单在打包时注入启动台的编译产物，
-  数据来自紧挨着打包器的 `launcher-catalog.json`，fork 自己的默认值不动。
-- **卡片背后的应用仍然不在包里。** 那九张卡是一份清单，不是软件：点开一张没有应用接入的卡，
-  提示是「应用已注册但未接入」。本包给的是启动台这个容器。
+- **九张卡现在一样宽。** 应用卡本身是 `<button>`，按钮的宽度由内容定：说明文字是一行不折行的，
+  说明一长，卡片就撑出自己的格子（223.8px 的轨道里长出 318px），压到旁边那张上，省略号也一直
+  不生效。现在卡片撑满格子，封面排齐，过长的说明正常截断。
+- **设置是整屏浮层，不再被左边那栏框住。** 设置面板渲染在左栏内部，而左栏带着玻璃那层
+  `backdrop-filter` —— 元素一旦用上它，就成了自己内部 fixed 定位子元素的包含块，面板因此被限在
+  左栏里：1440×900 的窗口里只有 264×884。现在折射效果挪到伪元素上，左栏不再参与定位。
+- **系统是浅色，界面照样是深色。** 主题默认跟随系统，浅色机器上外壳就跟着变白，两列侧栏全白。
+  现在这套皮肤一律把「跟随系统」当深色；外观里手动选浅色或深色，仍然选了就生效。
 
-其余与 v0.1.0 相同：三栏玻璃外壳、壁纸栏、沉浸模式数据仪表。
+其余与 v0.1.1 相同：三栏玻璃外壳、壁纸栏、沉浸模式数据仪表，以及那九张卡的清单。
 
 ## 六个包
 
@@ -111,11 +128,14 @@ package.
 安装会建它自己的 profile —— 示例里叫 `glass`，落在 `~/.dsh/profiles/glass` —— 不影响你的
 harness 本体，也能干净卸载。
 
-**干净安装上的实测**：全新 `DSH_HOME` + npm `latest` 的官方包，装六个 tarball 后 —— 启动台渲染
-9 张卡，名称与封面 preset 与清单文件一致，九张封面全部 `200 image/webp`、无失败请求；
-`/trending`、`/weather`、`/workbench/covers/*.webp` 均 `200`，伪造路径 `404`；只读模式下玻璃令牌
-有值（两列侧栏都是 `blur(28px) saturate(1.8)` + 渐变 + 发丝描边）；仪表四个卡位全部落到真值，
-无破图。
+**干净安装上的实测**：六个 tarball 走公网地址装进全新 `DSH_HOME`，宿主是 npm `latest` 的官方包 ——
+九张卡宽度一致（223.8px，各占一个轨道），没有互相压叠，九张封面都是 223.8×125.9（16:9），
+三段过长的说明正常截断；设置浮层 1440×900、起点 0,0，整屏铺满，它所在的那一栏上再没有会兜住
+它的属性；宿主系统设成浅色时界面仍是深色（`body` 为 `rgb(5,8,14)`，`color-scheme: dark`），
+深色宿主下同样。上一版验过的四项也复算过：启动台渲染 9 张卡，名称与封面 preset 与清单一致，
+九张封面全部 `200 image/webp`；`/trending`、`/weather`、`/workbench/covers/*.webp` 均 `200`，
+伪造路径 `404`；只读模式下玻璃令牌有值（两列侧栏都是 `blur(28px) saturate(1.8)` + 渐变 +
+发丝描边）；仪表四个卡位全部落到真值，无破图。
 
 **已知限制**：harness 版本若新增一行、恰好占了这套界面注册的位置，会撞车 —— 客户端以一行
 `Failed to load plugins` 报错，其余不渲染，要改的是这个发行包。harness 包约 26 MB，
