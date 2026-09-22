@@ -69,7 +69,9 @@ published `@deepseek-ai/dsh@latest`:
 - Glass tokens resolve in read-only mode (`blur(28px) saturate(1.8)` plus the
   gradient and hairline on both side columns) — the packages carry their own
   token sheet.
-- The dashboard's four slots all land values, with no broken image.
+- The dashboard's four slots all render — 热点 with live headlines, TOKEN 用量
+  with a count, 今日 with a real city and temperature, 待办 with its empty state
+  — and all nine cover images load at their natural 960×540.
 
 ## Known limits
 
@@ -135,7 +137,8 @@ harness 本体，也能干净卸载。
 深色宿主下同样。上一版验过的四项也复算过：启动台渲染 9 张卡，名称与封面 preset 与清单一致，
 九张封面全部 `200 image/webp`；`/trending`、`/weather`、`/workbench/covers/*.webp` 均 `200`，
 伪造路径 `404`；只读模式下玻璃令牌有值（两列侧栏都是 `blur(28px) saturate(1.8)` + 渐变 +
-发丝描边）；仪表四个卡位全部落到真值，无破图。
+发丝描边）；仪表四个卡位全部正常渲染（热点是真标题、TOKEN 用量有数字、今日是真城市与温度、
+待办显示空态），九张封面图全部以原尺寸 960×540 加载。
 
 **已知限制**：harness 版本若新增一行、恰好占了这套界面注册的位置，会撞车 —— 客户端以一行
 `Failed to load plugins` 报错，其余不渲染，要改的是这个发行包。harness 包约 26 MB，
