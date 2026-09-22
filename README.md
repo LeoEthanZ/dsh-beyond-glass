@@ -49,8 +49,8 @@ it can be any panel another plugin registers into it (below: a plugin market).
 
 ### Wallpaper
 
-The 极镜壁纸 panel offers two families: **four procedural fluids** (深海流光, 极光墨藤, 紫晶云海,
-熔金暮色) and **five motion landscapes** (雾隐丛林, 潮汐漫游, 雪峰天际, 雪岭电影感, 雪野静踪).
+The 极境壁纸 panel offers two families: **four procedural fluids** (深海流光, 极光翡翠, 紫晶云海,
+熔金暮色) and **five motion landscapes** (雾隐森林, 潮汐漫游, 雪峰天际, 雪岭电影感, 雪野滑踪).
 
 The fluids are drawn in the page and need no network. The landscapes are video and need a network
 on first play (the panel marks them 需要联网). Footage from [Coverr](https://coverr.co/) —
