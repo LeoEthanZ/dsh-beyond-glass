@@ -79,9 +79,9 @@ package.
 
 - **启动台自带首屏内容。** 以前干净安装打开是两张卡（只有那两个真带应用渲染器）；现在打开
   就是截图里那九张，名称、说明、封面与两个类目都随包提供。清单在打包时注入启动台的编译产物，
-  数据来自打包器旁边的 `launcher-catalog.json`，fork 自己的默认值不动。
+  数据来自紧挨着打包器的 `launcher-catalog.json`，fork 自己的默认值不动。
 - **卡片背后的应用仍然不在包里。** 那九张卡是一份清单，不是软件：点开一张没有应用接入的卡，
-  提示是「应用已注册但未接入」。本包提供的是启动台这个容器。
+  提示是「应用已注册但未接入」。本包给的是启动台这个容器。
 
 其余与 v0.1.0 相同：三栏玻璃外壳、壁纸栏、沉浸模式数据仪表。
 
@@ -94,9 +94,9 @@ package.
 | `beyond-glass-ui-sidebar-0.1.5-rc.2.tgz` | 左侧栏。 |
 | `beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz` | 右侧栏。 |
 | `deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz` | 壁纸选择器，以及所有面板的背景与模糊所依赖的玻璃令牌表。 |
-| `deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz` | 启动台：外壳竖栏、它负责的侧栏座位、装完时的清单，以及数据仪表。 |
+| `deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz` | 启动台：外壳竖栏、它负责的那几栏侧栏、装完时的清单，以及数据仪表。 |
 
-六个包请一次装完 —— 只有 harness 那个是 profile layer，另外五个由它 patch 的行挂载。
+六个包请一次装完 —— 只有 harness 那个是 profile layer，另外五个挂在它 patch 出来的行上。
 
 **兼容性**：按 `@deepseek-ai/dsh@0.1.5-rc.2` 构建，在 `0.1.5-rc.2`（npm 的 `latest`）上验证通过。
 安装会在 `~/.dsh/profiles/web` 下建 `web` profile，不影响你的 harness 本体，也能干净卸载。
@@ -104,11 +104,11 @@ package.
 **干净安装上的实测**：全新 `DSH_HOME` + npm `latest` 的官方包，装六个 tarball 后 —— 启动台渲染
 9 张卡，名称与封面 preset 与清单文件一致，九张封面全部 `200 image/webp`、无失败请求；
 `/trending`、`/weather`、`/workbench/covers/*.webp` 均 `200`，伪造路径 `404`；只读模式下玻璃令牌
-有值（两列侧栏都是 `blur(28px) saturate(1.8)` + 渐变 + 发丝描边）；仪表四个 slot 全部落到真值，
+有值（两列侧栏都是 `blur(28px) saturate(1.8)` + 渐变 + 发丝描边）；仪表四个卡位全部落到真值，
 无破图。
 
-**已知限制**：harness 版本若新增一行、恰好占用这套界面注册的座位，会撞车 —— 客户端以一行
-`Failed to load plugins` 报错，其余不渲染，修的地方在这个发行包这边。harness 包约 26 MB，
+**已知限制**：harness 版本若新增一行、恰好占了这套界面注册的位置，会撞车 —— 客户端以一行
+`Failed to load plugins` 报错，其余不渲染，要改的是这个发行包。harness 包约 26 MB，
 大部分是启动台与内置应用卡展示的模板预览素材。今日天气卡依赖宿主机能访问
 `whois.pconline.com.cn` 与 `open-meteo.com`，取不到时卡片停在空态且日志无痕。
 
