@@ -381,7 +381,12 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
   }
-  .card img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+  /* The pictures are shot at the harness's own aspect (1600x897). Declaring a
+     different one and covering cuts the sides off — about 5% each, which is
+     exactly where the rail and the right sidebar live. `height: auto` off the
+     width/height attributes on the tag is the same reservation without the
+     crop. */
+  .card img { display: block; width: 100%; height: auto; background: #0a1120; }
   .card .body { padding: 15px 17px 17px; }
   .card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
   .card p { margin: 0; font-size: 13.5px; color: var(--dim); }
@@ -572,7 +577,7 @@
 
       <div class="cards">
         <article class="card">
-          <img src="docs/01-shell-three-columns.jpg" alt="" loading="lazy">
+          <img src="docs/01-shell-three-columns.jpg" width="1600" height="897" alt="" loading="lazy">
           <div class="body">
             <h3 data-i18n="card1.title">Glass three columns</h3>
             <p data-i18n="card1.body">Brand rail, left sidebar and right sidebar all sit on the same glass tokens: translucent gradient, backdrop blur, hairline edge. The left folds to an icon rail, the right folds away entirely.</p>
@@ -580,7 +585,7 @@
           </div>
         </article>
         <article class="card">
-          <img src="docs/04-wallpaper-picker.jpg" alt="" loading="lazy">
+          <img src="docs/04-wallpaper-picker.jpg" width="1600" height="899" alt="" loading="lazy">
           <div class="body">
             <h3 data-i18n="card2.title">Wallpaper picker</h3>
             <p data-i18n="card2.body">Four procedural fluid palettes drawn locally in WebGL, five muted nature loops, one panel in the right column. Selecting one repaints every surface in the app.</p>
@@ -588,7 +593,7 @@
           </div>
         </article>
         <article class="card">
-          <img src="docs/07-dashboard-immersive.jpg" alt="" loading="lazy">
+          <img src="docs/07-dashboard-immersive.jpg" width="1600" height="898" alt="" loading="lazy">
           <div class="body">
             <h3 data-i18n="card3.title">Launcher and data island</h3>
             <p data-i18n="card3.body">A launcher that lays apps out by category, and an immersive mode whose right half is a data island: AI headlines, token usage, date and weather, to-dos.</p>
