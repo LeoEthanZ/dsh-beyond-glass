@@ -98,7 +98,7 @@ and the rest degrade to plain dependencies.
 `BASE` is one Release's download prefix, the same for both paths:
 
 ```sh
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.0
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 ```
 
 ### No harness yet
@@ -170,6 +170,8 @@ That removes `dsh --profile glass`; delete `~/.dsh/profiles/glass` if you want t
 
 - The three-column frame, the left column, the right column, and the glass token sheet they share.
 - The launcher: category grid, app-card look and motion, edit and register entries, paging.
+- The launcher's first-run contents: the nine cards the screenshots show, with their names,
+  descriptions, cover art and both categories — a clean install opens on that same 启动台.
 - Immersive mode and the dashboard's four cards — their look **and** their data paths.
 - The wallpaper picker and both wallpaper families (fluids drawn in-page; landscapes shipped as video).
 - The three host capabilities that make the above work on a **clean official host**: the trending and
@@ -178,10 +180,12 @@ That removes `dsh --profile glass`; delete `~/.dsh/profiles/glass` if you want t
 
 ### Not in the packages
 
-**The individual apps in the launcher.** Those cards (brand PPT, audio-to-text, employee directory,
-knowledge-base reader, project management, app development, Xiaohongshu, UI kit…) are apps and
-plugins of their own. This distribution provides the launcher as a container, how cards are drawn,
-and the "register a new app" entry. What shows up in your launcher depends on what you installed.
+**The applications behind those cards.** The nine cards ship with the packages, but the apps they
+open do not: brand PPT, audio-to-text, employee directory, knowledge-base reader, project
+management, app development, Xiaohongshu, UI kit and the register entry are each apps and plugins of
+their own. Opening an uncabled card answers 「应用已注册但未接入」 — registered with no application
+behind it yet. This distribution provides the launcher as a container, how cards are drawn, and the
+catalog they open on. What you can actually open depends on what you installed.
 
 **The tool panels in the right column.** Plugin market, recolour, unified cover art and the like are
 panels their own plugins register into the right column. This distribution provides the column and
