@@ -6,6 +6,9 @@ a profile of their own, and removing them puts you back where you started.
 
 [中文说明 →](README.zh.md)
 
+**[Live gallery →](https://leoethanz.github.io/dsh-beyond-glass/)** — all nine wallpapers in one
+page, switchable, with the fluid field running live around the frame.
+
 ![The three-column shell](docs/01-shell-three-columns.jpg)
 
 - [The three blocks](#the-three-blocks)

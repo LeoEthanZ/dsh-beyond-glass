@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beyond Glass — a glass shell for DeepSeek Harness</title>
+<meta name="description" content="A glass three-column shell for DeepSeek Harness: foldable sidebars, a launcher with a data island, and nine wallpapers underneath. Installable as six packages.">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Ccircle cx='12' cy='16' r='5' fill='%23538dca'/%3E%3Ccircle cx='20' cy='16' r='5' fill='%23eed8aa' fill-opacity='.75'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #f1f6fc;
+    --dim: rgba(226, 238, 250, .66);
+    --faint: rgba(226, 238, 250, .42);
+    --line: rgba(255, 255, 255, .13);
+    --panel: rgba(9, 14, 24, .58);
+    --panel-solid: rgba(8, 12, 21, .88);
+    --accent: #538dca;
+    --radius: 18px;
+    /* The centre window: cap by width, by the narrow-viewport gutter, and by
+       the height left over after the header, the rail and the caption. The
+       reservation is measured, not guessed: header 69 + title and lede 94 +
+       frame margin 18 + caption 37 + rail 63 + section padding 34. */
+    --shot: min(1160px, 84vw, max(520px, calc((100vh - 330px) * 1.6)));
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: #05080e;
+    color: var(--ink);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── The stage: the wallpaper, live, behind everything ───────────────── */
+
+  .stage { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #05080e; }
+
+  /* Oversized and blurred: this is the wallpaper continuing outward past the
+     frame, not a backdrop of its own. The wash is the frozen frame the app
+     itself shows for the active wallpaper, so it is also what stands in when
+     the WebGL context or the remote video is unavailable. */
+  .stage > .wash,
+  .stage > canvas,
+  .stage > video {
+    position: absolute;
+    inset: -8%;
+    width: 116%;
+    height: 116%;
+    display: block;
+    object-fit: cover;
+    filter: blur(16px) saturate(1.04);
+    transform: scale(1.02);
+  }
+
+  .stage > .wash {
+    background: #0a1120 center / cover no-repeat;
+    /* Deep enough to erase the ghost of the app window this still contains:
+       it doubles as the whole background when WebGL is unavailable. */
+    filter: blur(34px) saturate(1.06);
+    transition: opacity .5s ease;
+  }
+
+  /* The field is blurred hard on purpose. At a light blur the eye compares it
+     against the frozen frame — same shader, different moment, different pointer
+     — and reads two different pictures. Softened past the point where structure
+     is comparable, it reads as what it is: the same wallpaper, out of focus,
+     with the frame cut into it. */
+  .stage > canvas { filter: blur(34px) saturate(1.05) brightness(.86); }
+
+  .stage > video {
+    /* Same grade the app applies to nature wallpapers. A lighter blur than the
+       fluid gets: this is the same footage as the frame, so continuity is real
+       and only the grade needs matching. */
+    filter: blur(16px) saturate(.82) brightness(.72) contrast(1.04);
+    opacity: 0;
+    transition: opacity .6s ease;
+  }
+
+  .stage > video.is-on { opacity: 1; }
+  .stage > canvas { opacity: 0; transition: opacity .6s ease; }
+  .stage > canvas.is-on { opacity: 1; }
+
+  /* Keeps the frame legible without flattening the wallpaper. */
+  .veil {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(122% 84% at 50% 44%, rgba(4, 7, 13, 0) 30%, rgba(4, 7, 13, .48) 72%, rgba(4, 7, 13, .82) 100%),
+      linear-gradient(180deg, rgba(4, 7, 13, .5) 0%, rgba(4, 7, 13, 0) 26%);
+    pointer-events: none;
+  }
+
+  /* ── Shell ───────────────────────────────────────────────────────────── */
+
+  .top {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px clamp(18px, 4vw, 46px);
+  }
+
+  .brand { display: flex; align-items: baseline; gap: 10px; font-weight: 650; letter-spacing: .01em; }
+  .brand .mark {
+    width: 15px; height: 15px; border-radius: 50%;
+    align-self: center;
+    background: radial-gradient(circle at 32% 34%, #cfe4ff, var(--accent) 58%, rgba(9, 15, 26, .9) 100%);
+    box-shadow: 0 0 16px -2px var(--accent);
+  }
+  .brand .ver { font-size: 11px; font-weight: 500; color: var(--faint); letter-spacing: .06em; }
+
+  .top nav { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .top a, .top button {
+    font: inherit;
+    font-size: 13px;
+    color: var(--dim);
+    text-decoration: none;
+    padding: 7px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(10, 16, 27, .42);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    transition: color .2s, border-color .2s, background .2s;
+  }
+  .top a:hover, .top button:hover { color: var(--ink); border-color: rgba(255, 255, 255, .3); }
+  .top button[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); }
+
+  main { position: relative; z-index: 2; }
+
+  /* ── Hero: the frame, and the field it sits in ────────────────────────── */
+
+  .hero { padding: 4px clamp(18px, 4vw, 46px) 30px; text-align: center; }
+
+  .hero h1 {
+    margin: 6px auto 8px;
+    font-size: clamp(21px, 2.5vw, 30px);
+    font-weight: 620;
+    letter-spacing: -.01em;
+    text-shadow: 0 2px 24px rgba(4, 7, 13, .6);
+  }
+  .hero .sub {
+    margin: 0 auto;
+    max-width: 62ch;
+    font-size: clamp(13px, 1.15vw, 14.5px);
+    color: var(--dim);
+    text-shadow: 0 1px 14px rgba(4, 7, 13, .7);
+  }
+  .hero .sub b { color: var(--ink); font-weight: 560; }
+
+  .frame {
+    position: relative;
+    width: var(--shot);
+    margin: 18px auto 0;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: rgba(6, 10, 18, .5);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, .35),
+      0 26px 60px -24px rgba(0, 0, 0, .8),
+      0 70px 150px -50px var(--accent);
+    overflow: hidden;
+    transition: box-shadow .7s ease;
+  }
+  /* The frame is lit by the wallpaper it is cut into. */
+  .frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 12px;
+    background: linear-gradient(180deg, rgba(19, 26, 40, .82), rgba(11, 17, 28, .72));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    font-size: 11.5px;
+    color: var(--faint);
+  }
+  .bar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255, 255, 255, .22); }
+  .bar i:first-child { background: rgba(255, 255, 255, .34); }
+  .bar .url {
+    margin: 0 auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .02em;
+  }
+
+  .plate { position: absolute; inset: 34px 0 0; background: #0a1120; }
+  .plate img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity .45s ease;
+  }
+  .plate img.is-on { opacity: 1; }
+
+  .caption {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 14px auto 0;
+    font-size: 13px;
+    color: var(--dim);
+    flex-wrap: wrap;
+  }
+  .caption .swatch {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px -1px var(--accent);
+    transition: background .6s ease, box-shadow .6s ease;
+  }
+  .caption b { color: var(--ink); font-weight: 560; }
+  .caption span:last-child { color: var(--faint); }
+  .caption .hint { color: var(--faint); font-size: 12px; }
+  .caption .sep { color: var(--faint); }
+
+  .rail {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 14px auto 0;
+    padding: 0 4px;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+
+  .rail button {
+    flex: 0 0 auto;
+    width: 84px;
+    height: 53px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background-color: #0a1120;
+    background-size: 200% auto;
+    background-position: 62% 46%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    opacity: .58;
+    transition: opacity .25s ease, border-color .25s ease, transform .25s ease;
+  }
+  .rail button:hover { opacity: .92; }
+  .rail button[aria-current="true"] {
+    opacity: 1;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .step {
+    position: absolute;
+    top: 50%;
+    display: none;
+    place-items: center;
+    width: 40px; height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: rgba(10, 16, 27, .5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--ink);
+    font-size: 17px;
+    cursor: pointer;
+  }
+  .hero { position: relative; }
+  .step.prev { left: max(8px, calc(50% - var(--shot) / 2 - 58px)); }
+  .step.next { right: max(8px, calc(50% - var(--shot) / 2 - 58px)); }
+  .step:hover { border-color: rgba(255, 255, 255, .34); }
+  @media (min-width: 1180px) { .step { display: grid; } }
+
+  /* ── Bands ───────────────────────────────────────────────────────────── */
+
+  .band {
+    padding: clamp(40px, 6vw, 72px) clamp(18px, 4vw, 46px);
+    background: linear-gradient(180deg, rgba(5, 8, 14, .55), rgba(5, 8, 14, .88) 18%, rgba(5, 8, 14, .93));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(255, 255, 255, .07);
+  }
+  .band.dense { background: linear-gradient(180deg, rgba(5, 8, 14, .9), rgba(5, 8, 14, .96)); }
+
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 620;
+    letter-spacing: -.01em;
+  }
+  .band .lead { margin: 0 0 28px; color: var(--dim); max-width: 72ch; font-size: 14px; }
+
+  .cards { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--panel);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .card img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+  .card .body { padding: 15px 17px 17px; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+  .card p { margin: 0; font-size: 13.5px; color: var(--dim); }
+  .card .tagname {
+    display: inline-block;
+    margin-top: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: var(--faint);
+  }
+
+  .two { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+  .list { margin: 0; padding: 0; list-style: none; }
+  .list li {
+    position: relative;
+    padding: 11px 0 11px 20px;
+    border-top: 1px solid rgba(255, 255, 255, .07);
+    font-size: 13.5px;
+    color: var(--dim);
+  }
+  .list li:first-child { border-top: 0; }
+  .list li::before {
+    content: "";
+    position: absolute;
+    left: 3px; top: 19px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .list li b { color: var(--ink); font-weight: 560; }
+  .list li code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, .07);
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+
+  .steps { display: grid; gap: 26px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .steps h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .steps .note { margin: 0 0 12px; font-size: 13px; color: var(--faint); }
+
+  .code {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(3, 6, 12, .78);
+    overflow: hidden;
+  }
+  .code pre {
+    margin: 0;
+    padding: 14px 46px 14px 16px;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.4px;
+    line-height: 1.75;
+    color: #dce8f6;
+  }
+  .code pre .c { color: rgba(226, 238, 250, .38); }
+  .code .copy {
+    position: absolute;
+    top: 9px; right: 9px;
+    width: 28px; height: 28px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, .05);
+    color: var(--dim);
+    font-size: 12px;
+    cursor: pointer;
+    transition: color .2s, border-color .2s;
+  }
+  .code .copy:hover { color: var(--ink); border-color: rgba(255, 255, 255, .3); }
+  .code .copy.done { color: #8ce0b0; border-color: rgba(140, 224, 176, .5); }
+
+  footer {
+    position: relative;
+    z-index: 2;
+    padding: 30px clamp(18px, 4vw, 46px) 44px;
+    background: rgba(5, 8, 14, .95);
+    border-top: 1px solid rgba(255, 255, 255, .07);
+    font-size: 12.6px;
+    color: var(--faint);
+  }
+  footer .wrap { display: flex; gap: 14px 26px; flex-wrap: wrap; align-items: baseline; }
+  footer a { color: var(--dim); text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .18); }
+  footer a:hover { color: var(--ink); }
+
+  [hidden] { display: none !important; }
+
+  /* On a narrow screen the gutter is what caps the frame, not the height, so
+     spend a little more of it — the wallpaper is the subject. */
+  @media (max-width: 640px) {
+    :root { --shot: min(560px, 94vw); }
+    .hero { padding-left: 10px; padding-right: 10px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .plate img, .rail button, .stage > video, .stage > canvas { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" aria-hidden="true">
+  <div class="wash" id="wash"></div>
+  <canvas id="fluid"></canvas>
+  <video id="nature" muted loop playsinline preload="none"></video>
+  <div class="veil"></div>
+</div>
+
+<header class="top">
+  <div class="brand"><span class="mark"></span>Beyond Glass<span class="ver">v0.1.0</span></div>
+  <nav>
+    <a href="https://github.com/LeoEthanZ/dsh-beyond-glass">GitHub</a>
+    <a href="https://github.com/LeoEthanZ/dsh-beyond-glass/releases/tag/v0.1.0" data-i18n="nav.release">Release</a>
+    <a href="https://github.com/LeoEthanZ/dsh-beyond-glass/blob/main/README.md" data-i18n="nav.readme">README</a>
+    <a href="#install" data-i18n="nav.install">Install</a>
+    <button id="lang" type="button" aria-pressed="false">中文</button>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h1 data-i18n="hero.h1">A glass shell for DeepSeek Harness</h1>
+    <p class="sub" data-i18n="hero.sub">Foldable sidebars, a launcher with a data island, and nine wallpapers underneath — installable as six packages. The frame below is the real launcher; the field around it is the same wallpaper, running live.</p>
+
+    <div class="frame" id="frame">
+      <div class="bar">
+        <i></i><i></i><i></i>
+        <span class="url">127.0.0.1:3080</span>
+        <span id="barkind"></span>
+      </div>
+      <div class="plate">
+        <img id="shotA" alt="" decoding="async" fetchpriority="high">
+        <img id="shotB" alt="" decoding="async">
+      </div>
+    </div>
+
+    <div class="caption">
+      <span class="swatch"></span>
+      <b id="wname">Deep Ocean</b>
+      <span class="sep">·</span>
+      <span id="wkind"></span>
+      <span class="sep">·</span>
+      <span id="wpos">1 / 9</span>
+      <span class="hint" data-i18n="hero.hint">← → to switch, or click a frame below</span>
+    </div>
+
+    <nav class="rail" id="rail" aria-label="Wallpapers"></nav>
+
+    <button class="step prev" id="prev" type="button" aria-label="Previous wallpaper">‹</button>
+    <button class="step next" id="next" type="button" aria-label="Next wallpaper">›</button>
+  </section>
+
+  <section class="band" id="inside">
+    <div class="wrap">
+      <h2 data-i18n="inside.title">Three pieces of interface</h2>
+      <p class="lead" data-i18n="inside.lead">Everything below is in the packages. Screenshots come from this distribution — the second one from a fresh profile, so the launcher shows only what a clean install has.</p>
+
+      <div class="cards">
+        <article class="card">
+          <img src="docs/01-shell-three-columns.jpg" alt="" loading="lazy">
+          <div class="body">
+            <h3 data-i18n="card1.title">Glass three columns</h3>
+            <p data-i18n="card1.body">Brand rail, left sidebar and right sidebar all sit on the same glass tokens: translucent gradient, backdrop blur, hairline edge. The left folds to an icon rail, the right folds away entirely.</p>
+            <span class="tagname">ui-layout · ui-sidebar · ui-sidebar-right</span>
+          </div>
+        </article>
+        <article class="card">
+          <img src="docs/04-wallpaper-picker.jpg" alt="" loading="lazy">
+          <div class="body">
+            <h3 data-i18n="card2.title">Wallpaper picker</h3>
+            <p data-i18n="card2.body">Four procedural fluid palettes drawn locally in WebGL, five muted nature loops, one panel in the right column. Selecting one repaints every surface in the app.</p>
+            <span class="tagname">ui-wallpaper</span>
+          </div>
+        </article>
+        <article class="card">
+          <img src="docs/07-dashboard-immersive.jpg" alt="" loading="lazy">
+          <div class="body">
+            <h3 data-i18n="card3.title">Launcher and data island</h3>
+            <p data-i18n="card3.body">A launcher that lays apps out by category, and an immersive mode whose right half is a data island: AI headlines, token usage, date and weather, to-dos.</p>
+            <span class="tagname">ui-workbench</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band dense" id="boundary">
+    <div class="wrap two">
+      <div>
+        <h2 data-i18n="bounds.title">What the packages do not include</h2>
+        <p class="lead" data-i18n="bounds.lead">The boundary is worth stating plainly, because three of these look like missing features and are not.</p>
+      </div>
+      <ul class="list">
+        <li data-i18n="bounds.1"><b>The launcher's apps.</b> Each one is its own plugin. These packages ship the launcher, its category grid, the card treatment and the registration point; what appears in yours depends on what you install.</li>
+        <li data-i18n="bounds.2"><b>The right column's other panels.</b> Plugin market, skin switcher, unified covers — each registers into a seat. These packages ship the column, sessions and wallpapers.</li>
+        <li data-i18n="bounds.3"><b>The to-do card's data.</b> It reads the right sidebar's to-do panel, which is not in these packages, so it is empty on a clean host.</li>
+        <li data-i18n="bounds.4"><b>Weather, when the host cannot reach it.</b> The card resolves a city from the egress IP and fetches from Open-Meteo, host-side. Behind a proxy, or offline, it stays on its locating state and reports nothing — by design, not as a bug.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band" id="install">
+    <div class="wrap">
+      <h2 data-i18n="install.title">Install</h2>
+      <p class="lead" data-i18n="install.lead">Node.js and the <code>dsh</code> command. No clone, no build. All six packages go in at once — one of them is the profile layer that mounts the other five.</p>
+
+      <div class="code" style="max-width:640px;margin:0 0 28px">
+        <pre><span class="c"># the same Release for both paths below</span>
+BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.0</pre>
+        <button class="copy" type="button" aria-label="Copy">⧉</button>
+      </div>
+
+      <div class="steps">
+        <div>
+          <h3 data-i18n="install.a.title">A. You have not installed the harness</h3>
+          <p class="note" data-i18n="install.a.note">The first line installs dsh itself. The UI then lands in a profile of its own, <code>~/.dsh/profiles/glass</code>.</p>
+          <div class="code">
+            <pre data-copy="a">npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+dsh plugin --profile glass add \
+  $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
+  $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
+  $BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz \
+  $BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz \
+  $BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz \
+  $BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
+
+dsh --profile glass</pre>
+            <button class="copy" type="button" aria-label="Copy">⧉</button>
+          </div>
+        </div>
+
+        <div>
+          <h3 data-i18n="install.b.title">B. You already have the harness</h3>
+          <p class="note" data-i18n="install.b.note">Confirm the version first — <code>0.1.5-rc.2</code> or <code>0.1.6-alpha.2</code>. Anything else is untested. Then the same add, minus the harness install.</p>
+          <div class="code">
+            <pre data-copy="b">dsh --version      # 0.1.5-rc.2 or 0.1.6-alpha.2
+
+dsh plugin --profile glass add \
+  $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
+  $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
+  $BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz \
+  $BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz \
+  $BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz \
+  $BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
+
+dsh --profile glass</pre>
+            <button class="copy" type="button" aria-label="Copy">⧉</button>
+          </div>
+        </div>
+      </div>
+
+      <ul class="list" style="margin-top:26px">
+        <li data-i18n="install.tip1"><b>Pick an unused profile name.</b> If the name is taken, <code>add</code> stacks onto that existing profile instead of creating a new one. <code>glass</code> is only an example.</li>
+        <li data-i18n="install.tip2"><b>Your current setup is untouched.</b> The UI lives in the new profile; run it with <code>dsh --profile glass</code> and your usual command still behaves as before.</li>
+        <li data-i18n="install.tip3"><b>To remove it:</b> <code>dsh plugin --profile glass remove</code> the six package names, or delete <code>~/.dsh/profiles/glass</code>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span data-i18n="foot.license">MIT, same as the harness it builds on.</span>
+    <span data-i18n="foot.coverr">Nature wallpapers: footage from Coverr, commercial use, no attribution required.</span>
+    <span data-i18n="foot.fluid">Fluid wallpapers run the harness's own WebGL shader, extracted verbatim.</span>
+    <a href="https://github.com/LeoEthanZ/dsh-beyond-glass/blob/main/LICENSE" data-i18n="foot.link">License and notices</a>
+  </div>
+</footer>
+
+<script src="assets/fluid-shader.js"></script>
+<script>
+"use strict";
+
+/**
+ * The nine built-in wallpapers, in the picker's own order.
+ *
+ * Names are the product's own strings (the `wallpaper` locale namespace), so the
+ * page and the app say the same word for the same wallpaper. Palettes are the
+ * values from `wallpapers.ts`; the fluid entries therefore render exactly what
+ * the picker's first group renders, rather than a lookalike.
+ */
+const WALLPAPERS = [
+  {
+    id: "fluid-deep-ocean",
+    zh: "深海流光", en: "Deep Ocean",
+    kind: "fluid",
+    colors: ["#000000", "#1A3870", "#204a7e", "#eed8aa", "#000000"],
+    glowColors: ["#fff7d1", "#538dca", "#2d448b"],
+    accent: "#538dca",
+  },
+  {
+    id: "fluid-aurora",
+    zh: "极光翡翠", en: "Emerald Aurora",
+    kind: "fluid",
+    colors: ["#020807", "#063c42", "#0f7168", "#b8ffd9", "#010806"],
+    glowColors: ["#d9fff0", "#4be0c1", "#0b6470"],
+    accent: "#4be0c1",
+  },
+  {
+    id: "fluid-amethyst",
+    zh: "紫晶云海", en: "Amethyst Cloud",
+    kind: "fluid",
+    colors: ["#05020b", "#25115a", "#57318c", "#f0b8ff", "#08020e"],
+    glowColors: ["#ffe3ff", "#b46fff", "#552b8d"],
+    accent: "#b46fff",
+  },
+  {
+    id: "fluid-ember",
+    zh: "熔金暮色", en: "Ember Dusk",
+    kind: "fluid",
+    colors: ["#080201", "#4e130b", "#92361e", "#ffd08a", "#0b0201"],
+    glowColors: ["#fff1c4", "#ff8a45", "#7d2618"],
+    accent: "#ff8a45",
+  },
+  {
+    id: "nature-misty-forest",
+    zh: "雾隐森林", en: "Misty Forest",
+    kind: "video",
+    video: "https://cdn.coverr.co/videos/coverr-above-a-misty-forest-518/720p.mp4",
+    accent: "#9fbfd4",
+  },
+  {
+    id: "nature-ocean-drift",
+    zh: "潮汐漫游", en: "Ocean Drift",
+    kind: "video",
+    video: "https://cdn.coverr.co/videos/coverr-ocean-waves-3983/720p.mp4",
+    accent: "#6fb3d6",
+  },
+  {
+    id: "nature-snow-peaks",
+    zh: "雪峰天际", en: "Snow Peaks",
+    kind: "video",
+    video: "https://cdn.coverr.co/videos/coverr-snowy-mountains-1843/720p.mp4",
+    accent: "#aecbe8",
+  },
+  {
+    id: "nature-cinematic-snow",
+    zh: "雪岭电影感", en: "Cinematic Snow",
+    kind: "video",
+    video: "https://cdn.coverr.co/videos/coverr-cinematic-snowy-mountains-7615/720p.mp4",
+    accent: "#93aecb",
+  },
+  {
+    id: "nature-ski-view",
+    zh: "雪野滑踪", en: "Ski View",
+    kind: "video",
+    video: "https://cdn.coverr.co/videos/coverr-ski-view-3385/720p.mp4",
+    accent: "#c2d8ea",
+  },
+];
+
+const shotOf = (w) => `assets/gallery/${w.id}.jpg`;
+
+/* ── Copy ───────────────────────────────────────────────────────────────── */
+
+const COPY = {
+  en: {
+    "nav.release": "Release",
+    "nav.readme": "README",
+    "nav.install": "Install",
+    "hero.h1": "A glass shell for DeepSeek Harness",
+    "hero.sub": "Foldable sidebars, a launcher with a data island, and nine wallpapers underneath — installable as six packages. The frame below is the real launcher; the field around it is the same wallpaper, running live.",
+    "hero.hint": "← → to switch, or click a frame below",
+    "kind.fluid": "procedural fluid · WebGL, drawn locally",
+    "kind.video": "nature loop · 720p video, needs internet",
+    "inside.title": "Three pieces of interface",
+    "inside.lead": "Everything below is in the packages. The gallery above comes from a clean install of them — a fresh profile with nothing added — while these three are from a working setup, so the sidebar holds sessions and the launcher holds apps.",
+    "card1.title": "Glass three columns",
+    "card1.body": "Brand rail, left sidebar and right sidebar all sit on the same glass tokens: translucent gradient, backdrop blur, hairline edge. The left folds to an icon rail, the right folds away entirely.",
+    "card2.title": "Wallpaper picker",
+    "card2.body": "Four procedural fluid palettes drawn locally in WebGL, five muted nature loops, one panel in the right column. Selecting one repaints every surface in the app.",
+    "card3.title": "Launcher and data island",
+    "card3.body": "A launcher that lays apps out by category, and an immersive mode whose right half is a data island: AI headlines, token usage, date and weather, to-dos.",
+    "bounds.title": "What the packages do not include",
+    "bounds.lead": "The boundary is worth stating plainly, because three of these look like missing features and are not.",
+    "bounds.1": "<b>The launcher's apps.</b> Each one is its own plugin. These packages ship the launcher, its category grid, the card treatment and the registration point; what appears in yours depends on what you install.",
+    "bounds.2": "<b>The right column's other panels.</b> Plugin market, skin switcher, unified covers — each registers into a seat. These packages ship the column, sessions and wallpapers.",
+    "bounds.3": "<b>The to-do card's data.</b> It reads the right sidebar's to-do panel, which is not in these packages, so it is empty on a clean host.",
+    "bounds.4": "<b>Weather, when the host cannot reach it.</b> The card resolves a city from the egress IP and fetches from Open-Meteo, host-side. Behind a proxy, or offline, it stays on its locating state and reports nothing — by design, not as a bug.",
+    "install.title": "Install",
+    "install.lead": "Node.js and the <code>dsh</code> command. No clone, no build. All six packages go in at once — one of them is the profile layer that mounts the other five.",
+    "install.a.title": "A. You have not installed the harness",
+    "install.a.note": "The first line installs dsh itself. The UI then lands in a profile of its own, <code>~/.dsh/profiles/glass</code>.",
+    "install.b.title": "B. You already have the harness",
+    "install.b.note": "Confirm the version first — <code>0.1.5-rc.2</code> or <code>0.1.6-alpha.2</code>. Anything else is untested. Then the same add, minus the harness install.",
+    "install.tip1": "<b>Pick an unused profile name.</b> If the name is taken, <code>add</code> stacks onto that existing profile instead of creating a new one. <code>glass</code> is only an example.",
+    "install.tip2": "<b>Your current setup is untouched.</b> The UI lives in the new profile; run it with <code>dsh --profile glass</code> and your usual command still behaves as before.",
+    "install.tip3": "<b>To remove it:</b> <code>dsh plugin --profile glass remove</code> the six package names, or delete <code>~/.dsh/profiles/glass</code>.",
+    "foot.license": "MIT, same as the harness it builds on.",
+    "foot.coverr": "Nature wallpapers: footage from Coverr, commercial use, no attribution required.",
+    "foot.fluid": "Fluid wallpapers run the harness's own WebGL shader, extracted verbatim.",
+    "foot.link": "License and notices",
+  },
+  zh: {
+    "nav.release": "发行版",
+    "nav.readme": "说明文档",
+    "nav.install": "安装",
+    "hero.h1": "deepseek-harness 的三栏玻璃外壳",
+    "hero.sub": "可折叠的侧栏、带数据仪表的启动台，以及底下的九张壁纸 —— 以六个包安装。中间这个窗口是真的启动台；四周是同一张壁纸，实时在跑。",
+    "hero.hint": "← → 切换，或点下面的缩略图",
+    "kind.fluid": "程序化流体 · 页面内 WebGL 绘制",
+    "kind.video": "动态自然风光 · 720p 视频，需要联网",
+    "inside.title": "三块界面",
+    "inside.lead": "以下每一项都在包里。上面的画廊取自这套包的干净安装 —— 一个全新、什么都没加的 profile，用来照出干净安装的样子；下面三张则来自日常使用的环境，所以侧栏里有会话、启动台里有应用。",
+    "card1.title": "三栏玻璃外壳",
+    "card1.body": "品牌竖栏、左侧栏、右侧栏共用同一套玻璃令牌：半透明渐变、背景模糊、发丝描边。左栏可收成图标轨道，右栏可整列折叠。",
+    "card2.title": "壁纸选择器",
+    "card2.body": "四款程序化流体（页面内 WebGL 绘制）、五段静音循环的自然风光，共用一个右侧面板。选一张，全应用的面板一起换底。",
+    "card3.title": "启动台与数据仪表",
+    "card3.body": "启动台按类目铺开应用卡；进入沉浸模式后，右半屏是数据仪表：AI 热点、TOKEN 用量、日期与天气、待办。",
+    "bounds.title": "包里没有的东西",
+    "bounds.lead": "这条边界值得写清楚，因为其中三项看起来像缺功能，其实不是。",
+    "bounds.1": "<b>启动台里的具体应用。</b> 每个应用都是它自己的插件。本包提供启动台、类目网格、卡片外观与「注册一个新应用」这个入口；你的启动台显示什么，取决于你装了什么。",
+    "bounds.2": "<b>右栏里的其它工具面板。</b> 插件市场、颜色换肤、统一封面这类面板是各自插件注册的座位。本包提供右栏容器，以及其中的会话和壁纸。",
+    "bounds.3": "<b>待办卡的数据。</b> 它同步自右侧栏的待办面板，而那个面板不在本包内，所以在干净环境里这张卡是空的。",
+    "bounds.4": "<b>宿主取不到时的天气。</b> 天气卡按出口 IP 定位城市、由宿主侧向 Open-Meteo 取数。走代理或断网时它停在「正在定位…」，不落值也不报错 —— 这是设计，不是缺陷。",
+    "install.title": "安装",
+    "install.lead": "需要 Node.js 与 <code>dsh</code> 命令。不需要 clone，不需要构建。六个包必须一次装完 —— 其中一个是负责挂载另外五个的 profile layer。",
+    "install.a.title": "A. 你还没装 harness",
+    "install.a.note": "第一行装 dsh 本身。这套界面会落在它自己的 profile 里：<code>~/.dsh/profiles/glass</code>。",
+    "install.b.title": "B. 你已经装了 harness",
+    "install.b.note": "先确认版本 —— <code>0.1.5-rc.2</code> 或 <code>0.1.6-alpha.2</code>，其它版本没测过。然后同样这一串 add，不必重装 harness。",
+    "install.tip1": "<b>挑一个没被占用的 profile 名。</b> 名字被占用时 <code>add</code> 是叠到那个既有 profile 上，而不是新建。<code>glass</code> 只是示例。",
+    "install.tip2": "<b>你现有的环境一个字不动。</b> 界面住在新的 profile 里：用 <code>dsh --profile glass</code> 启动它，你原来的命令照旧。",
+    "install.tip3": "<b>卸载：</b> <code>dsh plugin --profile glass remove</code> 那六个包名，或直接删掉 <code>~/.dsh/profiles/glass</code> 目录。",
+    "foot.license": "MIT，与它所基于的 harness 一致。",
+    "foot.coverr": "自然风光壁纸：素材来自 Coverr，可商用、免署名。",
+    "foot.fluid": "流体壁纸跑的是 harness 自己的 WebGL 着色器，原样抽取。",
+    "foot.link": "许可与声明",
+  },
+};
+
+let lang = (navigator.language || "en").toLowerCase().startsWith("zh") ? "zh" : "en";
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  const table = COPY[lang];
+  for (const el of document.querySelectorAll("[data-i18n]")) {
+    const value = table[el.dataset.i18n];
+    // Two entries carry inline <b>/<code>; the rest are plain text.
+    if (value !== undefined) el.innerHTML = value;
+  }
+  const toggle = document.getElementById("lang");
+  toggle.textContent = lang === "en" ? "中文" : "English";
+  toggle.setAttribute("aria-pressed", lang === "zh" ? "true" : "false");
+  paintCaption();
+}
+
+/* ── The live fluid field ───────────────────────────────────────────────── */
+
+/**
+ * A port of the app's renderer: two passes (pointer flow into a quarter-res
+ * texture, then the fluid field to the canvas), 30fps, pointer-reactive.
+ *
+ * Differences from the app, both deliberate:
+ *   - the palette is interpolated on selection, so switching wallpapers fades
+ *     the field instead of cutting it;
+ *   - it paints one frame and stops under `prefers-reduced-motion`.
+ */
+function createFluid(canvas) {
+  const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, powerPreference: "low-power" });
+  if (gl === null) return null;
+
+  const F = window.BG_FLUID;
+  const P = F.PARAMS;
+  const compile = (type, source) => {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error("fluid shader:", gl.getShaderInfoLog(shader));
+      return null;
+    }
+    return shader;
+  };
+  const program = (fragment) => {
+    const vs = compile(gl.VERTEX_SHADER, F.VERTEX);
+    const fs = compile(gl.FRAGMENT_SHADER, fragment);
+    if (vs === null || fs === null) return null;
+    const p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error("fluid link:", gl.getProgramInfoLog(p));
+      return null;
+    }
+    return p;
+  };
+
+  const flowProgram = program(F.FLOW_FRAGMENT);
+  const postProgram = program(F.POST_FRAGMENT);
+  if (flowProgram === null || postProgram === null) return null;
+
+  const u = (p, names) => Object.fromEntries(names.map((n) => [n, gl.getUniformLocation(p, n)]));
+  const flowU = u(flowProgram, ["u_prev", "u_mouse", "u_velocity", "u_brushRadius", "u_brushStrength", "u_decay"]);
+  const postU = u(postProgram, [
+    "u_time", "u_resolution", "u_scale", "u_offset", "u_grain", "u_flowmap",
+    "u_distortBoost", "u_swirlBoost", "u_glowIntensity",
+    "u_glowColor1", "u_glowColor2", "u_glowColor3",
+    "u_c1", "u_c2", "u_c3", "u_c4", "u_c5",
+    "u_lightPos", "u_lightCore", "u_lightHalo", "u_vignette",
+    "u_bloomThreshold", "u_bloomRange", "u_bloomStrength",
+  ]);
+
+  const quad = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const bindQuad = (p) => {
+    const loc = gl.getAttribLocation(p, "a_position");
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  };
+
+  const hex = (h) => [
+    parseInt(h.slice(1, 3), 16) / 255,
+    parseInt(h.slice(3, 5), 16) / 255,
+    parseInt(h.slice(5, 7), 16) / 255,
+  ];
+  const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+
+  // Interpolated palette; `to` is the selected wallpaper.
+  const from = { colors: WALLPAPERS[0].colors.map(hex), glow: WALLPAPERS[0].glowColors.map(hex) };
+  const to = { colors: from.colors.map((c) => c.slice()), glow: from.glow.map((c) => c.slice()) };
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  let cw = 0, ch = 0, fw = 0, fh = 0, targets = null, write = 0;
+  const mouse = { x: .5, y: .5, sx: .5, sy: .5, vx: 0, vy: 0, svx: 0, svy: 0 };
+
+  const target = (w, h, data) => {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { fbo, tex };
+  };
+
+  const resize = () => {
+    const r = canvas.getBoundingClientRect();
+    const w = Math.max(1, Math.round(r.width));
+    const h = Math.max(1, Math.round(r.height));
+    if (w === cw && h === ch) return;
+    cw = w; ch = h;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    fw = Math.round(canvas.width / 4);
+    fh = Math.round(canvas.height / 4);
+    if (targets !== null) {
+      for (const t of targets) { gl.deleteTexture(t.tex); gl.deleteFramebuffer(t.fbo); }
+    }
+    const seed = new Uint8Array(fw * fh * 4);
+    for (let i = 0; i < fw * fh; i += 1) {
+      seed[4 * i] = 0; seed[4 * i + 1] = 128; seed[4 * i + 2] = 128; seed[4 * i + 3] = 255;
+    }
+    targets = [target(fw, fh, seed), target(fw, fh, seed)];
+    write = 0;
+  };
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+
+  const coarse = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const onMove = (event) => {
+    const r = canvas.getBoundingClientRect();
+    mouse.x = (event.clientX - r.left) / r.width;
+    mouse.y = 1 - (event.clientY - r.top) / r.height;
+  };
+  if (!coarse) window.addEventListener("mousemove", onMove, { passive: true });
+
+  const start = performance.now();
+  let raf = 0, last = 0;
+
+  const render = (now) => {
+    const elapsed = (now - start) * 0.001 * (P.speed / 100);
+    mouse.sx += (mouse.x - mouse.sx) * P.mouseSmoothing;
+    mouse.sy += (mouse.y - mouse.sy) * P.mouseSmoothing;
+    mouse.svx += ((mouse.x - mouse.sx) * 0.5 - mouse.svx) * P.mouseVelocity;
+    mouse.svy += ((mouse.y - mouse.sy) * 0.5 - mouse.svy) * P.mouseVelocity;
+    if (targets === null) return;
+
+    // Ease the palette towards the selection; the app swaps it outright.
+    for (let i = 0; i < 5; i += 1) from.colors[i] = mix(from.colors[i], to.colors[i], 0.06);
+    for (let i = 0; i < 3; i += 1) from.glow[i] = mix(from.glow[i], to.glow[i], 0.06);
+
+    const read = write === 0 ? targets[0] : targets[1];
+    const wr = write === 0 ? targets[1] : targets[0];
+    write = write === 0 ? 1 : 0;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, wr.fbo);
+    gl.viewport(0, 0, fw, fh);
+    gl.useProgram(flowProgram);
+    bindQuad(flowProgram);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, read.tex);
+    gl.uniform1i(flowU.u_prev, 0);
+    gl.uniform2f(flowU.u_mouse, mouse.sx, mouse.sy);
+    gl.uniform2f(flowU.u_velocity, mouse.svx, mouse.svy);
+    gl.uniform1f(flowU.u_brushRadius, P.mouseRadius);
+    gl.uniform1f(flowU.u_brushStrength, coarse ? 0 : P.mouseStrength);
+    gl.uniform1f(flowU.u_decay, P.decay);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.useProgram(postProgram);
+    bindQuad(postProgram);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, wr.tex);
+    gl.uniform1i(postU.u_flowmap, 0);
+    gl.uniform1f(postU.u_time, elapsed);
+    gl.uniform2f(postU.u_resolution, canvas.width, canvas.height);
+    gl.uniform1f(postU.u_scale, P.scale);
+    gl.uniform2f(postU.u_offset, P.offsetX / 100, P.offsetY / 100);
+    gl.uniform1f(postU.u_grain, P.grain);
+    gl.uniform1f(postU.u_distortBoost, P.distortBoost);
+    gl.uniform1f(postU.u_swirlBoost, P.swirlBoost);
+    gl.uniform1f(postU.u_glowIntensity, P.glowIntensity);
+    gl.uniform3f(postU.u_glowColor1, ...from.glow[0]);
+    gl.uniform3f(postU.u_glowColor2, ...from.glow[1]);
+    gl.uniform3f(postU.u_glowColor3, ...from.glow[2]);
+    gl.uniform3f(postU.u_c1, ...from.colors[0]);
+    gl.uniform3f(postU.u_c2, ...from.colors[1]);
+    gl.uniform3f(postU.u_c3, ...from.colors[2]);
+    gl.uniform3f(postU.u_c4, ...from.colors[3]);
+    gl.uniform3f(postU.u_c5, ...from.colors[4]);
+    gl.uniform2f(postU.u_lightPos, P.lightX + (mouse.sx - P.lightX) * P.lightFollow, P.lightY);
+    gl.uniform1f(postU.u_lightCore, P.lightCore);
+    gl.uniform1f(postU.u_lightHalo, P.lightHalo);
+    gl.uniform1f(postU.u_vignette, P.vignette);
+    gl.uniform1f(postU.u_bloomThreshold, P.bloomThreshold);
+    gl.uniform1f(postU.u_bloomRange, P.bloomRange);
+    gl.uniform1f(postU.u_bloomStrength, P.bloomStrength);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  };
+
+  const loop = (now) => {
+    raf = requestAnimationFrame(loop);
+    if (document.hidden || now - last < 1000 / 30) return;
+    last = now - ((now - last) % (1000 / 30));
+    render(now);
+  };
+  if (still) render(performance.now()); else raf = requestAnimationFrame(loop);
+
+  return {
+    setPalette(wallpaper) {
+      to.colors = wallpaper.colors.map(hex);
+      to.glow = wallpaper.glowColors.map(hex);
+      if (still) for (let i = 0; i < 40; i += 1) render(performance.now());
+    },
+    stop() { cancelAnimationFrame(raf); window.removeEventListener("mousemove", onMove); },
+  };
+}
+
+/* ── Wiring ─────────────────────────────────────────────────────────────── */
+
+const els = {
+  wash: document.getElementById("wash"),
+  canvas: document.getElementById("fluid"),
+  video: document.getElementById("nature"),
+  rail: document.getElementById("rail"),
+  shotA: document.getElementById("shotA"),
+  shotB: document.getElementById("shotB"),
+  wname: document.getElementById("wname"),
+  wkind: document.getElementById("wkind"),
+  wpos: document.getElementById("wpos"),
+  barkind: document.getElementById("barkind"),
+  lang: document.getElementById("lang"),
+};
+
+const fluid = createFluid(els.canvas);
+let index = 0;
+let front = els.shotA;
+let back = els.shotB;
+let token = 0;
+
+const nameOf = (w) => (lang === "zh" ? w.zh : w.en);
+
+function paintCaption() {
+  const w = WALLPAPERS[index];
+  els.wname.textContent = nameOf(w);
+  els.wkind.textContent = COPY[lang][w.kind === "fluid" ? "kind.fluid" : "kind.video"];
+  els.wpos.textContent = `${index + 1} / ${WALLPAPERS.length}`;
+  els.barkind.textContent = `${nameOf(w)} · ${w.kind === "fluid" ? "WebGL" : "720p"}`;
+  document.documentElement.style.setProperty("--accent", w.accent);
+  for (const [i, button] of [...els.rail.children].entries()) {
+    button.setAttribute("aria-current", i === index ? "true" : "false");
+  }
+}
+
+/** Swap the frame once the next shot is decoded, so the old one never blinks. */
+function showShot(w) {
+  const mine = ++token;
+  const next = new Image();
+  next.decoding = "async";
+  next.src = shotOf(w);
+  const commit = () => {
+    if (mine !== token) return;
+    back.src = next.src;
+    back.alt = `${nameOf(w)} wallpaper in the launcher`;
+    back.classList.add("is-on");
+    front.classList.remove("is-on");
+    const swap = front;
+    front = back;
+    back = swap;
+  };
+  // decode() rejects on a broken file; a broken shot should still switch the
+  // caption, so the failure path commits too.
+  next.decode().then(commit, commit);
+}
+
+function select(next, { push = true } = {}) {
+  index = (next + WALLPAPERS.length) % WALLPAPERS.length;
+  const w = WALLPAPERS[index];
+
+  // The wash is the same wallpaper as a still: it is the base the live layers
+  // sit on, and the whole background if they cannot run.
+  els.wash.style.backgroundImage = `url("${shotOf(w)}")`;
+  showShot(w);
+
+  if (w.kind === "fluid" && fluid !== null) {
+    fluid.setPalette(w);
+    els.canvas.classList.add("is-on");
+    els.video.classList.remove("is-on");
+  } else if (w.kind === "video") {
+    els.canvas.classList.remove("is-on");
+    els.video.classList.remove("is-on");
+    if (els.video.getAttribute("src") !== w.video) els.video.src = w.video;
+    els.video.play().then(() => {
+      if (WALLPAPERS[index].id === w.id) els.video.classList.add("is-on");
+    }, () => { /* Offline: the wash still carries the wallpaper. */ });
+  }
+
+  paintCaption();
+  if (push) {
+    // replaceState throws on file:// URLs, which is also how this page gets
+    // reviewed before it is published; the deep link is a nicety, not a load.
+    try { history.replaceState(null, "", `#${w.id}`); } catch { /* file:// review */ }
+  }
+}
+
+for (const [i, w] of WALLPAPERS.entries()) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.title = `${w.en} · ${w.zh}`;
+  button.setAttribute("aria-label", `${w.en} / ${w.zh}`);
+  // Thumbnails crop into the wallpaper side of the frame, past the sidebar.
+  button.style.backgroundImage = `url("${shotOf(w)}")`;
+  button.addEventListener("click", () => select(i));
+  els.rail.append(button);
+}
+
+document.getElementById("prev").addEventListener("click", () => select(index - 1));
+document.getElementById("next").addEventListener("click", () => select(index + 1));
+els.lang.addEventListener("click", () => { lang = lang === "en" ? "zh" : "en"; applyLang(); showShot(WALLPAPERS[index]); });
+
+window.addEventListener("keydown", (event) => {
+  if (event.metaKey || event.ctrlKey || event.altKey) return;
+  if (event.key === "ArrowLeft") { select(index - 1); event.preventDefault(); }
+  if (event.key === "ArrowRight") { select(index + 1); event.preventDefault(); }
+  const digit = Number.parseInt(event.key, 10);
+  if (Number.isInteger(digit) && digit >= 1 && digit <= WALLPAPERS.length) {
+    select(digit - 1);
+    event.preventDefault();
+  }
+});
+
+// A thumb is draggable on desktop, which fights the horizontal rail.
+for (const button of document.querySelectorAll(".rail button")) button.draggable = false;
+
+for (const code of document.querySelectorAll(".code")) {
+  const pre = code.querySelector("pre");
+  const button = code.querySelector(".copy");
+  if (pre === null || button === null) continue;
+  button.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(pre.textContent);
+    } catch {
+      // Clipboard needs a secure context; select the block so it can be copied.
+      const range = document.createRange();
+      range.selectNodeContents(pre);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return;
+    }
+    button.classList.add("done");
+    button.textContent = "✓";
+    setTimeout(() => { button.classList.remove("done"); button.textContent = "⧉"; }, 1400);
+  });
+}
+
+if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  els.video.addEventListener("error", () => els.video.classList.remove("is-on"));
+}
+
+applyLang();
+const wanted = WALLPAPERS.findIndex((w) => w.id === location.hash.slice(1));
+select(wanted === -1 ? 0 : wanted, { push: false });
+</script>
+</body>
+</html>
