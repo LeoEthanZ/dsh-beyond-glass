@@ -17,15 +17,16 @@
     --panel-solid: rgba(8, 12, 21, .88);
     --accent: #538dca;
     --radius: 18px;
-    /* The centre window: cap by width, by the narrow-viewport gutter, and by
-       the height left over after the header, the rail and the caption. The
-       reservation is measured, not guessed: header 69 + title and lede 94 +
-       frame margin 18 + caption 37 + rail 63 + section padding 34. */
-    /* The frame is shot at 16:9; the reserve below is the chrome around it
-       (bar + air + headline + sub + frame margin + caption + rail + padding),
-       measured at 1600x900 — the rail has to stay above the fold, it is the
-       only wallpaper switcher under 1180px wide. */
-    --shot: min(1400px, 88vw, max(520px, calc((100vh - 360px) * 1.778)));
+    /* The centre window. It straddles the fold on purpose: the headline gets a
+       whole screen to breathe in, and the window is cut by the black band, so
+       the wallpaper behind it reads as a layer rather than a backdrop. `--hang`
+       is how much of it falls past the fold — the headline's slack and the
+       black band's padding are both derived from it, so the geometry lives in
+       one place. Capped by width and by the gutter; free of any one-screen
+       budget, which is what lets it be this large. */
+    --shot: min(1400px, 92vw, max(680px, calc((100svh - 240px) * 1.778)));
+    --frameh: calc(var(--shot) * 9 / 16 + 34px);
+    --hang: calc((var(--shot) * 9 / 16 + 34px) * 0.56);
   }
 
   * { box-sizing: border-box; }
@@ -91,13 +92,15 @@
   .stage > canvas { opacity: 0; transition: opacity .6s ease; }
   .stage > canvas.is-on { opacity: 1; }
 
-  /* Keeps the frame legible without flattening the wallpaper. */
+  /* Keeps the frame legible without flattening the wallpaper. The top of this
+     gradient only needs to carry the header now: the headline sits low in the
+     first screen, well past where it used to be. */
   .veil {
     position: absolute;
     inset: 0;
     background:
       radial-gradient(122% 84% at 50% 44%, rgba(4, 7, 13, 0) 30%, rgba(4, 7, 13, .48) 72%, rgba(4, 7, 13, .82) 100%),
-      linear-gradient(180deg, rgba(4, 7, 13, .5) 0%, rgba(4, 7, 13, 0) 26%);
+      linear-gradient(180deg, rgba(4, 7, 13, .42) 0%, rgba(4, 7, 13, 0) 16%);
     pointer-events: none;
   }
 
@@ -144,33 +147,67 @@
 
   /* ── Hero: the frame, and the field it sits in ────────────────────────── */
 
-  .hero { padding: 30px clamp(18px, 4vw, 46px) 14px; text-align: center; }
+  /* The first screen belongs to the headline, and is mostly empty. That air is
+     the point — it is where the wallpaper gets looked at — and it is what lets
+     the window be this large without crowding anything. */
+  .hero {
+    position: relative;
+    z-index: 3;               /* over .night, so the overhanging window wins */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 0 clamp(18px, 4vw, 46px);
+    text-align: center;
+  }
+
+  .head {
+    flex: 1 1 auto;
+    display: grid;
+    place-content: center;
+    gap: clamp(14px, 1.6vh, 24px);
+    padding: clamp(14px, 3vh, 44px) 0 clamp(24px, 5vh, 72px);
+  }
 
   .hero h1 {
-    margin: 0 auto 10px;
-    font-size: clamp(30px, 3.2vw, 50px);
+    margin: 0 auto;
+    /* Balanced, not filled: the Chinese title is nine characters plus a hyphen
+       and a word, and a plain `ch` cap left the last character stranded on its
+       own line. */
+    max-width: 26ch;
+    text-wrap: balance;
+    font-size: clamp(34px, 4.6vw, 68px);
     font-weight: 640;
-    line-height: 1.05;
-    letter-spacing: -.024em;
-    text-shadow: 0 2px 30px rgba(4, 7, 13, .68);
+    line-height: 1.06;
+    letter-spacing: -.028em;
+    text-shadow: 0 2px 34px rgba(4, 7, 13, .7);
   }
   .hero .sub {
     margin: 0 auto;
-    max-width: 74ch;
-    font-size: clamp(13px, 1.15vw, 15px);
+    max-width: 66ch;
+    font-size: clamp(13.5px, 1.2vw, 16px);
     color: var(--dim);
-    text-shadow: 0 1px 14px rgba(4, 7, 13, .7);
+    text-shadow: 0 1px 14px rgba(4, 7, 13, .72);
   }
   .hero .sub b { color: var(--ink); font-weight: 560; }
 
+  /* The window, plus the control card that floats above it. The negative
+     bottom margin is the whole trick: it pulls the black band up under the
+     window, so the fold cuts it instead of the window sitting inside it. */
+  .stagebox {
+    position: relative;
+    flex: 0 0 auto;
+    width: var(--shot);
+    margin: 0 auto calc(var(--hang) * -1);
+  }
+
   .frame {
     position: relative;
-    width: var(--shot);
+    width: 100%;
     /* 34px of chrome plus the 16:9 the gallery is shot at — so `cover` has
        nothing left to crop, which it silently does under a book-keeping
        aspect ratio that ignores the bar. */
-    height: calc(var(--shot) * 9 / 16 + 34px);
-    margin: 20px auto 0;
+    height: var(--frameh);
     border-radius: var(--radius);
     border: 1px solid var(--line);
     background: rgba(6, 10, 18, .5);
@@ -225,93 +262,92 @@
   }
   .plate img.is-on { opacity: 1; }
 
-  .caption {
+  /* The switcher is a control card pinned just above the window's top edge,
+     where a floating toolbar would sit. It shows the wallpapers themselves —
+     rendered with no interface in them — not crops of the window shots, which
+     only ever showed a wallpaper through the glass. Being out of the flow, it
+     costs the window nothing. */
+  .wallbar {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 14px);
+    transform: translateX(-50%);
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 10px auto 0;
-    font-size: 13px;
-    color: var(--dim);
-    flex-wrap: wrap;
-  }
-  .caption .swatch {
-    width: 9px; height: 9px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px -1px var(--accent);
-    transition: background .6s ease, box-shadow .6s ease;
-  }
-  .caption b { color: var(--ink); font-weight: 560; }
-  .caption span:last-child { color: var(--faint); }
-  .caption .hint { color: var(--faint); font-size: 12px; }
-  .caption .sep { color: var(--faint); }
-
-  .rail {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin: 10px auto 0;
-    padding: 0 4px;
+    gap: 12px;
     max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .rail::-webkit-scrollbar { display: none; }
-
-  .rail button {
-    flex: 0 0 auto;
-    width: 76px;
-    height: 43px;
-    padding: 0;
+    padding: 8px 14px;
     border: 1px solid var(--line);
-    border-radius: 9px;
+    border-radius: 999px;
+    background: rgba(8, 13, 22, .6);
+    backdrop-filter: blur(18px) saturate(1.12);
+    -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    box-shadow: 0 18px 46px -22px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .1);
+    transition: box-shadow .7s ease;
+  }
+
+  /* Name and position only. What kind of wallpaper it is — procedural fluid,
+     or a loop that needs the network — is a paragraph, so it lives in the
+     card's tooltip instead of stretching the card to twice this width. */
+  .now {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .now b { color: var(--ink); font-weight: 600; }
+  .now .pos { color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  .thumbs { display: flex; gap: 5px; }
+
+  .thumbs button {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 21px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .17);
+    border-radius: 7px;
     background-color: #0a1120;
-    background-size: 200% auto;
-    background-position: 62% 46%;
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
     cursor: pointer;
-    opacity: .58;
+    opacity: .55;
     transition: opacity .25s ease, border-color .25s ease, transform .25s ease;
   }
-  .rail button:hover { opacity: .92; }
-  .rail button[aria-current="true"] {
+  .thumbs button:hover { opacity: .95; }
+  .thumbs button[aria-current="true"] {
     opacity: 1;
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 24px -10px var(--accent);
     transform: translateY(-2px);
   }
 
-  .step {
-    position: absolute;
-    top: 50%;
-    display: none;
-    place-items: center;
-    width: 40px; height: 40px;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    background: rgba(10, 16, 27, .5);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: var(--ink);
-    font-size: 17px;
-    cursor: pointer;
-  }
-  .hero { position: relative; }
-  .step.prev { left: max(8px, calc(50% - var(--shot) / 2 - 58px)); }
-  .step.next { right: max(8px, calc(50% - var(--shot) / 2 - 58px)); }
-  .step:hover { border-color: rgba(255, 255, 255, .34); }
-  @media (min-width: 1180px) { .step { display: grid; } }
+  /* The floating arrows are gone. They existed because the thumbnail rail used
+     to scroll out of view under 1180px; the control card now rides on the
+     window at every width, so nothing is left without a way to switch. */
 
-  /* ── Bands ───────────────────────────────────────────────────────────── */
+  /* ── Below the fold ──────────────────────────────────────────────────── */
+
+  /* Solid, not glass. The wallpaper stops dead where the window is cut, and
+     that stop is what makes the window read as opening onto it rather than
+     floating on it. The top pad is the window's own overhang, so the first
+     section never lands behind the window. */
+  .night {
+    position: relative;
+    z-index: 2;
+    background: #05080e;
+    padding-top: calc(var(--hang) + clamp(20px, 4vh, 52px));
+  }
 
   .band {
     padding: clamp(40px, 6vw, 72px) clamp(18px, 4vw, 46px);
-    background: linear-gradient(180deg, rgba(5, 8, 14, .55), rgba(5, 8, 14, .88) 18%, rgba(5, 8, 14, .93));
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
     border-top: 1px solid rgba(255, 255, 255, .07);
   }
-  .band.dense { background: linear-gradient(180deg, rgba(5, 8, 14, .9), rgba(5, 8, 14, .96)); }
+  .band:first-child { border-top: 0; }
+  .band.dense { background: rgba(3, 5, 10, .6); }
 
   .wrap { max-width: 1080px; margin: 0 auto; }
 
@@ -420,7 +456,7 @@
     position: relative;
     z-index: 2;
     padding: 30px clamp(18px, 4vw, 46px) 44px;
-    background: rgba(5, 8, 14, .95);
+    background: #05080e;
     border-top: 1px solid rgba(255, 255, 255, .07);
     font-size: 12.6px;
     color: var(--faint);
@@ -431,16 +467,38 @@
 
   [hidden] { display: none !important; }
 
-  /* On a narrow screen the gutter is what caps the frame, not the height, so
-     spend a little more of it — the wallpaper is the subject. */
+  /* Narrow: the control card is the only chrome that has to fit inside the
+     window's width, so it shrinks first and sheds its label. */
+  @media (max-width: 900px) {
+    .wallbar { gap: 10px; padding: 8px 12px; }
+    .thumbs button { width: 32px; height: 18px; border-radius: 5px; }
+    .now { font-size: 11.5px; }
+    .now .kind { display: none; }
+  }
+
   @media (max-width: 640px) {
-    :root { --shot: min(560px, 94vw); }
-    .hero { padding-left: 10px; padding-right: 10px; }
+    :root { --shot: 94vw; }
+    /* The header was stacking into five rows here, which pushed the whole
+       window off the screen — the header is not the point of the page. Release
+       and README are folded away; both are reachable further down. */
+    .top { flex-wrap: nowrap; padding: 12px 14px; gap: 10px; }
+    .top .ver { display: none; }
+    .top nav { flex-wrap: nowrap; gap: 6px; }
+    .top nav a[data-i18n="nav.release"],
+    .top nav a[data-i18n="nav.readme"] { display: none; }
+    .top a, .top button { font-size: 12px; padding: 6px 11px; white-space: nowrap; }
+    /* A full screen of air is a desktop gesture; on a phone it just means the
+       window is never seen. */
+    .hero { min-height: 82svh; padding-left: 10px; padding-right: 10px; }
+    .thumbs { gap: 4px; }
+    .thumbs button { width: 23px; height: 14px; border-radius: 4px; }
+    /* The window's own title bar still names the wallpaper. */
+    .now { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .plate img, .rail button, .stage > video, .stage > canvas { transition: none; }
+    .plate img, .thumbs button, .stage > video, .stage > canvas { transition: none; }
   }
 </style>
 </head>
@@ -466,37 +524,35 @@
 
 <main>
   <section class="hero">
-    <h1 data-i18n="hero.h1">A glass shell for DeepSeek Harness</h1>
-    <p class="sub" data-i18n="hero.sub">Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.</p>
-
-    <div class="frame" id="frame">
-      <div class="bar">
-        <i></i><i></i><i></i>
-        <span class="url">127.0.0.1:3080</span>
-        <span id="barkind"></span>
-      </div>
-      <div class="plate">
-        <img id="shotA" alt="" decoding="async" fetchpriority="high">
-        <img id="shotB" alt="" decoding="async">
-      </div>
+    <div class="head">
+      <h1 data-i18n="hero.h1">A glass shell for DeepSeek Harness</h1>
+      <p class="sub" data-i18n="hero.sub">Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.</p>
     </div>
 
-    <div class="caption">
-      <span class="swatch"></span>
-      <b id="wname">Deep Ocean</b>
-      <span class="sep">·</span>
-      <span id="wkind"></span>
-      <span class="sep">·</span>
-      <span id="wpos">1 / 9</span>
-      <span class="hint" data-i18n="hero.hint">← → to switch, or click a frame below</span>
+    <div class="stagebox">
+      <div class="wallbar" id="wallbar" role="group" aria-label="Wallpapers">
+        <nav class="thumbs" id="rail"></nav>
+        <div class="now">
+          <b id="wname">Deep Ocean</b>
+          <span class="pos" id="wpos">1 / 9</span>
+        </div>
+      </div>
+
+      <div class="frame" id="frame">
+        <div class="bar">
+          <i></i><i></i><i></i>
+          <span class="url">127.0.0.1:3080</span>
+          <span id="barkind"></span>
+        </div>
+        <div class="plate">
+          <img id="shotA" alt="" decoding="async" fetchpriority="high">
+          <img id="shotB" alt="" decoding="async">
+        </div>
+      </div>
     </div>
-
-    <nav class="rail" id="rail" aria-label="Wallpapers"></nav>
-
-    <button class="step prev" id="prev" type="button" aria-label="Previous wallpaper">‹</button>
-    <button class="step next" id="next" type="button" aria-label="Next wallpaper">›</button>
   </section>
 
+  <div class="night">
   <section class="band" id="inside">
     <div class="wrap">
       <h2 data-i18n="inside.title">Three pieces of interface</h2>
@@ -604,6 +660,7 @@ dsh --profile glass</pre>
       </ul>
     </div>
   </section>
+  </div>
 </main>
 
 <footer>
@@ -698,6 +755,8 @@ const WALLPAPERS = [
 ];
 
 const shotOf = (w) => `assets/gallery/${w.id}.jpg`;
+/** The wallpaper alone, no interface in it: what the control card shows. */
+const thumbOf = (w) => `assets/thumbs/${w.id}.jpg`;
 
 /* ── Copy ───────────────────────────────────────────────────────────────── */
 
@@ -708,7 +767,6 @@ const COPY = {
     "nav.install": "Install",
     "hero.h1": "A glass shell for DeepSeek Harness",
     "hero.sub": "Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.",
-    "hero.hint": "← → to switch, or click a frame below",
     "kind.fluid": "procedural fluid · WebGL, drawn locally",
     "kind.video": "nature loop · 720p video, needs internet",
     "inside.title": "Three pieces of interface",
@@ -745,7 +803,6 @@ const COPY = {
     "nav.install": "安装",
     "hero.h1": "deepseek-harness 的三栏玻璃外壳",
     "hero.sub": "可折叠的侧栏、带数据仪表的启动台，以及九张壁纸 —— 以六个包安装。中间这一帧是作者自己环境的真实截屏，四周是同一张壁纸，实时在跑。",
-    "hero.hint": "← → 切换，或点下面的缩略图",
     "kind.fluid": "程序化流体 · 页面内 WebGL 绘制",
     "kind.video": "动态自然风光 · 720p 视频，需要联网",
     "inside.title": "三块界面",
@@ -1017,8 +1074,8 @@ const els = {
   shotA: document.getElementById("shotA"),
   shotB: document.getElementById("shotB"),
   wname: document.getElementById("wname"),
-  wkind: document.getElementById("wkind"),
   wpos: document.getElementById("wpos"),
+  wallbar: document.getElementById("wallbar"),
   barkind: document.getElementById("barkind"),
   lang: document.getElementById("lang"),
 };
@@ -1033,10 +1090,11 @@ const nameOf = (w) => (lang === "zh" ? w.zh : w.en);
 
 function paintCaption() {
   const w = WALLPAPERS[index];
+  const kind = COPY[lang][w.kind === "fluid" ? "kind.fluid" : "kind.video"];
   els.wname.textContent = nameOf(w);
-  els.wkind.textContent = COPY[lang][w.kind === "fluid" ? "kind.fluid" : "kind.video"];
   els.wpos.textContent = `${index + 1} / ${WALLPAPERS.length}`;
   els.barkind.textContent = `${nameOf(w)} · ${w.kind === "fluid" ? "WebGL" : "720p"}`;
+  els.wallbar.title = `${nameOf(w)} — ${kind}`;
   document.documentElement.style.setProperty("--accent", w.accent);
   for (const [i, button] of [...els.rail.children].entries()) {
     button.setAttribute("aria-current", i === index ? "true" : "false");
@@ -1068,9 +1126,10 @@ function select(next, { push = true } = {}) {
   index = (next + WALLPAPERS.length) % WALLPAPERS.length;
   const w = WALLPAPERS[index];
 
-  // The wash is the same wallpaper as a still: it is the base the live layers
-  // sit on, and the whole background if they cannot run.
-  els.wash.style.backgroundImage = `url("${shotOf(w)}")`;
+  // The wash is the same wallpaper as a still — the bare wallpaper, not the
+  // window shot. It is the base the live layers sit on, and the whole
+  // background if they cannot run.
+  els.wash.style.backgroundImage = `url("${thumbOf(w)}")`;
   showShot(w);
 
   if (w.kind === "fluid" && fluid !== null) {
@@ -1099,14 +1158,13 @@ for (const [i, w] of WALLPAPERS.entries()) {
   button.type = "button";
   button.title = `${w.en} · ${w.zh}`;
   button.setAttribute("aria-label", `${w.en} / ${w.zh}`);
-  // Thumbnails crop into the wallpaper side of the frame, past the sidebar.
-  button.style.backgroundImage = `url("${shotOf(w)}")`;
+  // The wallpaper on its own. Cropping the window shot instead only ever
+  // showed the wallpaper through three panes of glass.
+  button.style.backgroundImage = `url("${thumbOf(w)}")`;
   button.addEventListener("click", () => select(i));
   els.rail.append(button);
 }
 
-document.getElementById("prev").addEventListener("click", () => select(index - 1));
-document.getElementById("next").addEventListener("click", () => select(index + 1));
 els.lang.addEventListener("click", () => { lang = lang === "en" ? "zh" : "en"; applyLang(); showShot(WALLPAPERS[index]); });
 
 window.addEventListener("keydown", (event) => {
@@ -1120,8 +1178,8 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-// A thumb is draggable on desktop, which fights the horizontal rail.
-for (const button of document.querySelectorAll(".rail button")) button.draggable = false;
+// A thumb is draggable on desktop, which fights the control card.
+for (const button of document.querySelectorAll(".thumbs button")) button.draggable = false;
 
 for (const code of document.querySelectorAll(".code")) {
   const pre = code.querySelector("pre");
