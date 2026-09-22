@@ -21,7 +21,11 @@
        the height left over after the header, the rail and the caption. The
        reservation is measured, not guessed: header 69 + title and lede 94 +
        frame margin 18 + caption 37 + rail 63 + section padding 34. */
-    --shot: min(1160px, 84vw, max(520px, calc((100vh - 330px) * 1.6)));
+    /* The frame is shot at 16:9; the reserve below is the chrome around it
+       (bar + air + headline + sub + frame margin + caption + rail + padding),
+       measured at 1600x900 — the rail has to stay above the fold, it is the
+       only wallpaper switcher under 1180px wide. */
+    --shot: min(1400px, 88vw, max(520px, calc((100vh - 360px) * 1.778)));
   }
 
   * { box-sizing: border-box; }
@@ -105,7 +109,7 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 18px clamp(18px, 4vw, 46px);
+    padding: 14px clamp(18px, 4vw, 46px);
   }
 
   .brand { display: flex; align-items: baseline; gap: 10px; font-weight: 650; letter-spacing: .01em; }
@@ -140,19 +144,20 @@
 
   /* ── Hero: the frame, and the field it sits in ────────────────────────── */
 
-  .hero { padding: 4px clamp(18px, 4vw, 46px) 30px; text-align: center; }
+  .hero { padding: 30px clamp(18px, 4vw, 46px) 14px; text-align: center; }
 
   .hero h1 {
-    margin: 6px auto 8px;
-    font-size: clamp(21px, 2.5vw, 30px);
-    font-weight: 620;
-    letter-spacing: -.01em;
-    text-shadow: 0 2px 24px rgba(4, 7, 13, .6);
+    margin: 0 auto 10px;
+    font-size: clamp(30px, 3.2vw, 50px);
+    font-weight: 640;
+    line-height: 1.05;
+    letter-spacing: -.024em;
+    text-shadow: 0 2px 30px rgba(4, 7, 13, .68);
   }
   .hero .sub {
     margin: 0 auto;
-    max-width: 62ch;
-    font-size: clamp(13px, 1.15vw, 14.5px);
+    max-width: 74ch;
+    font-size: clamp(13px, 1.15vw, 15px);
     color: var(--dim);
     text-shadow: 0 1px 14px rgba(4, 7, 13, .7);
   }
@@ -161,8 +166,11 @@
   .frame {
     position: relative;
     width: var(--shot);
-    margin: 18px auto 0;
-    aspect-ratio: 16 / 10;
+    /* 34px of chrome plus the 16:9 the gallery is shot at — so `cover` has
+       nothing left to crop, which it silently does under a book-keeping
+       aspect ratio that ignores the bar. */
+    height: calc(var(--shot) * 9 / 16 + 34px);
+    margin: 20px auto 0;
     border-radius: var(--radius);
     border: 1px solid var(--line);
     background: rgba(6, 10, 18, .5);
@@ -222,7 +230,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    margin: 14px auto 0;
+    margin: 10px auto 0;
     font-size: 13px;
     color: var(--dim);
     flex-wrap: wrap;
@@ -242,7 +250,7 @@
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin: 14px auto 0;
+    margin: 10px auto 0;
     padding: 0 4px;
     max-width: 100%;
     overflow-x: auto;
@@ -252,8 +260,8 @@
 
   .rail button {
     flex: 0 0 auto;
-    width: 84px;
-    height: 53px;
+    width: 76px;
+    height: 43px;
     padding: 0;
     border: 1px solid var(--line);
     border-radius: 9px;
@@ -459,7 +467,7 @@
 <main>
   <section class="hero">
     <h1 data-i18n="hero.h1">A glass shell for DeepSeek Harness</h1>
-    <p class="sub" data-i18n="hero.sub">Foldable sidebars, a launcher with a data island, and nine wallpapers underneath — installable as six packages. The frame below is a real capture of the author's own launcher; the field around it is the same wallpaper, running live.</p>
+    <p class="sub" data-i18n="hero.sub">Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.</p>
 
     <div class="frame" id="frame">
       <div class="bar">
@@ -699,7 +707,7 @@ const COPY = {
     "nav.readme": "README",
     "nav.install": "Install",
     "hero.h1": "A glass shell for DeepSeek Harness",
-    "hero.sub": "Foldable sidebars, a launcher with a data island, and nine wallpapers underneath — installable as six packages. The frame below is a real capture of the author's own launcher; the field around it is the same wallpaper, running live.",
+    "hero.sub": "Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.",
     "hero.hint": "← → to switch, or click a frame below",
     "kind.fluid": "procedural fluid · WebGL, drawn locally",
     "kind.video": "nature loop · 720p video, needs internet",
@@ -736,7 +744,7 @@ const COPY = {
     "nav.readme": "说明文档",
     "nav.install": "安装",
     "hero.h1": "deepseek-harness 的三栏玻璃外壳",
-    "hero.sub": "可折叠的侧栏、带数据仪表的启动台，以及底下的九张壁纸 —— 以六个包安装。中间这一帧是作者自己环境的真实截屏；四周是同一张壁纸，实时在跑。",
+    "hero.sub": "可折叠的侧栏、带数据仪表的启动台，以及九张壁纸 —— 以六个包安装。中间这一帧是作者自己环境的真实截屏，四周是同一张壁纸，实时在跑。",
     "hero.hint": "← → 切换，或点下面的缩略图",
     "kind.fluid": "程序化流体 · 页面内 WebGL 绘制",
     "kind.video": "动态自然风光 · 720p 视频，需要联网",
