@@ -91,20 +91,30 @@ each of those stops is spelled out under
 
 ## Install
 
-You need Node.js and the `dsh` CLI (the first command below installs `dsh` if you do not have it).
-Nothing else — no clone, no build.
+You need Node.js, **pnpm**, and the `dsh` CLI (the first command below installs `dsh` if you do not
+have it). Nothing else — no clone, no build. `dsh plugin` is a pnpm forwarder underneath, so pnpm
+has to be on `PATH`; on Windows that is the one piece a fresh Node install leaves out.
 
 All six packages go in **one** `add`, because only the `harness` package is a profile layer that
 mounts the other five. Installing them one at a time works too, but only the last one is a layer
 and the rest degrade to plain dependencies.
 
-`BASE` is one Release's download prefix, the same for both paths:
+`BASE` is one Release's download prefix. Set it the way your shell wants:
 
 ```sh
 BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 ```
 
+```powershell
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+```
+
+Every command below is given twice, `bash`/`zsh` and PowerShell. Take the one your shell speaks —
+they are not interchangeable.
+
 ### No harness yet
+
+**macOS / Linux — `bash`, `zsh`**
 
 ```sh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
@@ -120,8 +130,28 @@ dsh plugin --profile glass add \
 dsh --profile glass
 ```
 
-The `add` command creates `~/.dsh/profiles/glass`. `glass` is just a profile name — pick another
-if you like.
+**Windows — PowerShell**
+
+```powershell
+npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+dsh plugin --profile glass add `
+  "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
+  "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
+
+dsh --profile glass
+```
+
+Each backtick is PowerShell's line continuation, and it has to be the last character on its line —
+one space after it and the command breaks. In `cmd.exe` neither block works as written; use
+PowerShell.
+
+The `add` command creates `~/.dsh/profiles/glass` (`%USERPROFILE%\.dsh\profiles\glass` on Windows).
+`glass` is just a profile name — pick another if you like.
 
 ### The harness is already installed
 
@@ -133,6 +163,8 @@ dsh --version      # needs 0.1.5-rc.2 or 0.1.6-alpha.2
 
 If it matches, install — exactly as above, minus the harness install:
 
+**macOS / Linux — `bash`, `zsh`**
+
 ```sh
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
@@ -141,6 +173,20 @@ dsh plugin --profile glass add \
   $BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz \
   $BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz \
   $BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
+
+dsh --profile glass
+```
+
+**Windows — PowerShell**
+
+```powershell
+dsh plugin --profile glass add `
+  "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
+  "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
 
 dsh --profile glass
 ```
@@ -158,6 +204,8 @@ Two things to watch:
 
 ### Remove
 
+**macOS / Linux — `bash`, `zsh`**
+
 ```sh
 dsh plugin --profile glass remove \
   @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar \
@@ -165,7 +213,17 @@ dsh plugin --profile glass remove \
   @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
 ```
 
-That removes `dsh --profile glass`; delete `~/.dsh/profiles/glass` if you want the whole profile gone.
+**Windows — PowerShell**
+
+```powershell
+dsh plugin --profile glass remove `
+  @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar `
+  @beyond-glass/ui-sidebar-right `
+  @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
+```
+
+That removes `dsh --profile glass`; delete `~/.dsh/profiles/glass`
+(`%USERPROFILE%\.dsh\profiles\glass` on Windows) if you want the whole profile gone.
 
 ## What is in the packages, what is not
 

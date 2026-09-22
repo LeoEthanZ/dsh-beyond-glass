@@ -85,19 +85,28 @@ profile，卸掉就恢复原样。
 
 ## 安装
 
-需要 Node.js 和 `dsh` 命令（还没有 `dsh` 的话，下面的第一行命令会装上）。不需要 clone，
-不需要构建。
+需要 Node.js、**pnpm** 和 `dsh` 命令（还没有 `dsh` 的话，下面的第一行命令会装上）。不需要
+clone，不需要构建。`dsh plugin` 底下转发给的就是 pnpm，所以 pnpm 得先在 PATH 上 —— Windows
+上装完 Node 默认没有 pnpm，这一步最容易漏。
 
 六个包必须**一次装完**：只有 `harness` 那个是 profile layer，负责挂载另外五个。
 分开装也能装上，只不过只有最后那个是 layer，其余会退化成普通依赖。
 
-`BASE` 是同一份 Release 的下载地址，两路通用：
+`BASE` 是同一份 Release 的下载地址。按你用的 shell 来设：
 
 ```sh
 BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1
 ```
 
+```powershell
+$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.1"
+```
+
+下面的命令都给了两份：`bash`/`zsh` 一份，PowerShell 一份。照你用的那个抄，两份不能混着用。
+
 ### 没装过 harness
+
+**macOS / Linux —— `bash`、`zsh`**
 
 ```sh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
@@ -113,7 +122,27 @@ dsh plugin --profile glass add \
 dsh --profile glass
 ```
 
-上面的 `add` 会建好 `~/.dsh/profiles/glass`；`glass` 只是 profile 名，可以换成别的。
+**Windows —— PowerShell**
+
+```powershell
+npm install -g @deepseek-ai/dsh@0.1.5-rc.2
+
+dsh plugin --profile glass add `
+  "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
+  "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
+
+dsh --profile glass
+```
+
+PowerShell 里面的反引号是续行符，必须是那一行的最后一个字符 —— 后面多一个空格，命令就断了。
+`cmd.exe` 里两份都跑不通，用 PowerShell。
+
+上面的 `add` 会建好 `~/.dsh/profiles/glass`（Windows 上是 `%USERPROFILE%\.dsh\profiles\glass`）；
+`glass` 只是 profile 名，可以换成别的。
 
 ### 已经装了 harness
 
@@ -125,6 +154,8 @@ dsh --version      # 需要 0.1.5-rc.2 或 0.1.6-alpha.2
 
 版本对得上就直接装 —— 和上一节完全一样，只是不必重装 harness：
 
+**macOS / Linux —— `bash`、`zsh`**
+
 ```sh
 dsh plugin --profile glass add \
   $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
@@ -133,6 +164,20 @@ dsh plugin --profile glass add \
   $BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz \
   $BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz \
   $BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
+
+dsh --profile glass
+```
+
+**Windows —— PowerShell**
+
+```powershell
+dsh plugin --profile glass add `
+  "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
+  "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz" `
+  "$BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" `
+  "$BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
 
 dsh --profile glass
 ```
@@ -149,6 +194,8 @@ dsh --profile glass
 
 ### 卸载
 
+**macOS / Linux —— `bash`、`zsh`**
+
 ```sh
 dsh plugin --profile glass remove \
   @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar \
@@ -156,7 +203,17 @@ dsh plugin --profile glass remove \
   @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
 ```
 
-`dsh --profile glass` 这一路就没了；不想要整个 profile，删掉 `~/.dsh/profiles/glass` 目录即可。
+**Windows —— PowerShell**
+
+```powershell
+dsh plugin --profile glass remove `
+  @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar `
+  @beyond-glass/ui-sidebar-right `
+  @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
+```
+
+`dsh --profile glass` 这一路就没了；不想要整个 profile，删掉 `~/.dsh/profiles/glass`
+（Windows 上是 `%USERPROFILE%\.dsh\profiles\glass`）目录即可。
 
 ## 包里有什么，没有什么
 
