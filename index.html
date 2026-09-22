@@ -1263,9 +1263,18 @@ const hero = { state: "ready", away: false, cues: [], next: 0, watcher: null };
 // decision, and this is a fact about a video file.
 const HERO_WALLPAPER = "fluid-deep-ocean";
 
-/** Whether this device wants a loop at all. The device, not the choice. */
+/**
+ * Whether this device wants a loop at all. The device, not the choice.
+ *
+ * Not a floor of 1000px, which reads as "only a big desktop counts" and locks
+ * out every window between it and the page's own phone layout at 640 — a
+ * laptop window, or a preview pane, both of which can watch nine seconds as
+ * well as a large window can. A landscape phone is wider than that breakpoint,
+ * so the pointer is what tells those two apart.
+ */
 const heroWanted = () =>
-  window.innerWidth >= 1000 &&
+  window.innerWidth > 640 &&
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
   !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
   navigator.connection?.saveData !== true;
 
@@ -1279,6 +1288,10 @@ const heroFits = () => heroWanted() && WALLPAPERS[index].id === HERO_WALLPAPER;
  */
 function startHero() {
   if (hero.state === "playing" || hero.cues.length === 0 || !heroFits()) return;
+  // A pass that starts on a page nobody is looking at is a pass spent on
+  // nobody, and a preview pane loading behind the editor is exactly that. It
+  // waits; `visibilitychange` below starts it when the page is seen.
+  if (document.visibilityState === "hidden") return;
   hero.state = "playing";
   hero.next = 0;
   const el = els.hero;
@@ -1346,9 +1359,25 @@ async function offerHero() {
     hero.state = "ready";
     els.hero.classList.remove("is-on");
   });
+  // A file that breaks part-way hands the window back the same way. A dead
+  // element left on top would be hiding the picture the page rests on, and
+  // nothing else would ever take it down.
+  els.hero.addEventListener("error", () => {
+    hero.state = "ready";
+    els.hero.classList.remove("is-on");
+  });
   watchHero();
   startHero();
 }
+
+/**
+ * The third way in, and the one a preview pane needs: the document was not
+ * being looked at when the page finished loading, so the pass was not spent.
+ * Becoming visible takes the pass that `startHero` declined.
+ */
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") startHero();
+});
 
 /**
  * The other way a pass comes round: away and back. Measured on the frame rather
