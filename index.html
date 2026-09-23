@@ -198,24 +198,52 @@
      README and the language toggle, and the release's two doors sit under the
      headline, where the eye already is. */
   .cta { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+  /* Both doors wear the shell's own glass — the material the launcher and New
+     Session buttons are made of, in the weights it takes when it stands on a
+     live wallpaper rather than on a dimmed panel: a smoked two-stop tint, dark
+     at the top-left and deeper at the bottom-right, over a backdrop whose
+     colour is pushed up rather than blurred away (the field here is already
+     soft, so a second blur would buy nothing).
+     The edge is the shell's specular arc as an inset shadow: a key light along
+     the top and left, a dimmer counter-light along the bottom and right, the
+     same 1.15-to-0.75 weighting the arc gives them. Drawn as a filled
+     background layer under a translucent tint it would bleed across the whole
+     capsule — measured, the interior came out brighter than the wallpaper
+     behind it — and drawn with a mask it would paint the capsule white if the
+     mask stopped working. Two offset shadows have neither failure.
+     Pill-shaped, because that is the shape this page's own buttons take; what
+     is borrowed is the material. */
   .cta a {
     font-size: 14px;
     font-weight: 560;
     color: var(--ink);
     text-decoration: none;
     padding: 10px 18px;
-    border: 1px solid var(--line);
+    border: 1px solid transparent;
     border-radius: 999px;
-    background: rgba(10, 16, 27, .42);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: border-color .2s, background .2s;
+    background: linear-gradient(135deg, rgba(23, 33, 53, .50), rgba(9, 15, 26, .68));
+    box-shadow:
+      inset 1px 1px 0 0 rgba(255, 255, 255, .55),
+      inset -1px -1px 0 0 rgba(255, 255, 255, .34);
+    backdrop-filter: blur(1px) saturate(1.7);
+    -webkit-backdrop-filter: blur(1px) saturate(1.7);
+    transition: transform .2s ease, filter .2s ease;
   }
-  .cta a:hover { border-color: rgba(255, 255, 255, .3); background: rgba(10, 16, 27, .78); }
-  /* The accent one is the release's own door — the same treatment the star
-     link at the foot of the page gets. */
-  .cta .accent { border-color: var(--accent); background: rgba(9, 14, 24, .5); }
-  .cta .accent:hover { background: rgba(9, 14, 24, .85); }
+  .cta a:hover { transform: translateY(-1px); filter: brightness(1.12); }
+  .cta a:active { transform: translateY(0); filter: brightness(1.02); }
+
+  /* The accent door is the same glass with the accent on its edge — where this
+     page already puts its primary, from the header's Release down to the star
+     link at the foot. Accent in the fill was tried and dropped: it lifts the
+     surface off the field (the brightest wallpaper left the label at 3.98:1),
+     and paying that back took a thicker pour that left the two doors
+     measurably identical — within 3 of each other on every channel. */
+  .cta .accent {
+    box-shadow:
+      inset 1px 1px 0 0 color-mix(in srgb, var(--accent) 85%, transparent),
+      inset -1px -1px 0 0 color-mix(in srgb, var(--accent) 53%, transparent);
+  }
 
   /* The window, plus the control card docked under it. The negative bottom
      margin is the whole trick: it pulls the black band up under the window, so
