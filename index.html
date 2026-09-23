@@ -172,18 +172,39 @@
     padding: clamp(14px, 3vh, 44px) 0 clamp(24px, 5vh, 72px);
   }
 
+  /* The name at the size a name gets. Until now the display line was a
+     sentence about the shell; the thing itself is called Beyond Glass, and the
+     header only says it small. Tracking and line-height are tight because a
+     wordmark is read as one shape, not as two words that happen to sit next to
+     each other — at 12 characters it never wraps, so there is no cap on the
+     measure. Weight gives way to size: at 112px the size carries the line, and
+     a regular weight is what keeps 112px from shouting. The sentence it
+     displaced sits under it as the gloss. */
   .hero h1 {
     margin: 0 auto;
-    /* Balanced, not filled: the Chinese title is nine characters plus a hyphen
-       and a word, and a plain `ch` cap left the last character stranded on its
-       own line. */
-    max-width: 26ch;
     text-wrap: balance;
-    font-size: clamp(34px, 4.6vw, 68px);
-    font-weight: 640;
-    line-height: 1.06;
-    letter-spacing: -.028em;
+    font-size: clamp(42px, 8.6vw, 112px);
+    font-weight: 400;
+    line-height: .98;
+    letter-spacing: -.038em;
     text-shadow: 0 2px 34px rgba(4, 7, 13, .7);
+  }
+
+  /* What the name is. Between the name and the feature line it has to read as
+     a gloss on one and a heading for the other, so it takes the ink rather
+     than the dim tone the paragraph below it uses. */
+  .hero .tagline {
+    margin: 0 auto;
+    max-width: 46ch;
+    font-size: clamp(15px, 1.5vw, 20px);
+    font-weight: 560;
+    line-height: 1.35;
+    color: var(--ink);
+    /* Two stops, not one: the wide one is the page's own glow and is what the
+       name gets away with, the tight one is what actually holds a 20px line on
+       a live field — measured on the brightest wallpaper, the wide glow alone
+       left this line at 2.8:1. */
+    text-shadow: 0 1px 2px rgba(4, 7, 13, .8), 0 1px 18px rgba(4, 7, 13, .72);
   }
   .hero .sub {
     margin: 0 auto;
@@ -632,7 +653,8 @@
 <main>
   <section class="hero">
     <div class="head">
-      <h1 data-i18n="hero.h1">A glass shell for DeepSeek Harness</h1>
+      <h1>Beyond Glass</h1>
+      <p class="tagline" data-i18n="hero.tagline">A glass shell for DeepSeek Harness</p>
       <p class="sub" data-i18n="hero.sub">Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.</p>
       <div class="cta">
         <a href="https://github.com/LeoEthanZ/dsh-beyond-glass">GitHub</a>
@@ -885,7 +907,7 @@ const COPY = {
     "nav.release": "Release",
     "nav.readme": "README",
     "hero.install": "Install",
-    "hero.h1": "A glass shell for DeepSeek Harness",
+    "hero.tagline": "A glass shell for DeepSeek Harness",
     "hero.sub": "Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.",
     "kind.fluid": "procedural fluid · WebGL, drawn locally",
     "kind.video": "nature loop · 720p video, needs internet",
@@ -921,7 +943,7 @@ const COPY = {
     "nav.release": "版本发布",
     "nav.readme": "使用说明",
     "hero.install": "安装",
-    "hero.h1": "deepseek-harness 的三栏玻璃外壳",
+    "hero.tagline": "deepseek-harness 的三栏玻璃外壳",
     "hero.sub": "可折叠的侧栏、带数据仪表的启动台、九张壁纸 —— 分装成六个包。中间这一帧取自作者自己的环境，四周是同一张壁纸，而且是真的在动。",
     "kind.fluid": "程序化流体 · 本地 WebGL 渲染",
     "kind.video": "动态自然风光 · 720p 在线视频，需要联网",
