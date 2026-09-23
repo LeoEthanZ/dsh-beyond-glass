@@ -693,54 +693,8 @@
 
       <div class="steps">
         <div>
-          <h3 data-i18n="install.a.title">A. You have not installed the harness</h3>
-          <p class="note" data-i18n="install.a.note">The first line installs dsh itself. The UI then lands in a profile of its own, <code>~/.dsh/profiles/glass</code>.</p>
-          <div class="code">
-            <pre data-copy="a"># macOS / Linux — bash, zsh
-npm install -g @deepseek-ai/dsh@0.1.5-rc.2
-
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3
-
-# create the profile first (plain add leaves it with no app layer)
-dsh --profile glass --from-default-profile web --dump-config > /dev/null
-
-dsh plugin --profile glass add \
-  $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
-  $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
-  $BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz \
-  $BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz \
-  $BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz \
-  $BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
-
-dsh --profile glass</pre>
-            <button class="copy" type="button" aria-label="Copy">⧉</button>
-          </div>
-
-          <div class="code" style="margin-top:12px">
-            <pre data-copy="a-win"># Windows — PowerShell
-npm install -g @deepseek-ai/dsh@0.1.5-rc.2
-
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3"
-
-# create the profile first (plain add leaves it with no app layer)
-dsh --profile glass --from-default-profile web --dump-config > $null
-
-dsh plugin --profile glass add `
-  "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
-  "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
-  "$BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz" `
-  "$BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz" `
-  "$BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" `
-  "$BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
-
-dsh --profile glass</pre>
-            <button class="copy" type="button" aria-label="Copy">⧉</button>
-          </div>
-        </div>
-
-        <div>
-          <h3 data-i18n="install.b.title">B. You already have the harness</h3>
-          <p class="note" data-i18n="install.b.note">Confirm the version first — <code>0.1.5-rc.2</code> or <code>0.1.6-alpha.2</code>. Anything else is untested. Then the same <code>add</code>, minus the harness install.</p>
+          <h3 data-i18n="install.step.title">You already have the harness</h3>
+          <p class="note" data-i18n="install.step.note">Confirm the version first — <code>0.1.5-rc.2</code> or <code>0.1.6-alpha.2</code>. Anything else is untested.</p>
           <div class="code">
             <pre data-copy="b"># macOS / Linux — bash, zsh
 dsh --version      # 0.1.5-rc.2 or 0.1.6-alpha.2
@@ -923,10 +877,8 @@ const COPY = {
     "bounds.4": "<b>Weather, when the host cannot reach it.</b> The card resolves a city from the egress IP and fetches from Open-Meteo, host-side. Behind a proxy, or offline, it stays on its locating state and reports nothing — by design, not as a bug.",
     "install.title": "Install",
     "install.lead": "Node.js, <code>pnpm</code> and the <code>dsh</code> command — <code>dsh plugin</code> forwards to pnpm, so pnpm has to be on <code>PATH</code>. No clone, no build. All six packages go in at once — one of them is the profile layer that mounts the other five.",
-    "install.a.title": "A. You have not installed the harness",
-    "install.a.note": "The first line installs dsh itself. The UI then lands in a profile of its own, <code>~/.dsh/profiles/glass</code>.",
-    "install.b.title": "B. You already have the harness",
-    "install.b.note": "Confirm the version first — <code>0.1.5-rc.2</code> or <code>0.1.6-alpha.2</code>. Anything else is untested. Then the same <code>add</code>, minus the harness install.",
+    "install.step.title": "You already have the harness",
+    "install.step.note": "Confirm the version first — <code>0.1.5-rc.2</code> or <code>0.1.6-alpha.2</code>. Anything else is untested.",
     "install.tip1": "<b>Pick an unused profile name.</b> If the name is taken, <code>add</code> stacks onto that existing profile instead of creating a new one. <code>glass</code> is only an example.",
     "install.tip2": "<b>Your current setup is untouched.</b> The UI lives in the new profile; run it with <code>dsh --profile glass</code> and your usual command still behaves as before.",
     "install.tip3": "<b>To remove it:</b> <code>dsh plugin --profile glass remove</code> the six package names, or delete the profile directory — <code>~/.dsh/profiles/glass</code>, or <code>%USERPROFILE%\\.dsh\\profiles\\glass</code> on Windows.",
@@ -961,10 +913,8 @@ const COPY = {
     "bounds.4": "<b>宿主取不到天气的时候。</b> 天气卡按出口 IP 定位城市，再由宿主侧去 Open-Meteo 取数。走代理或者断网时，它会一直停在「正在定位…」，既不显示数据也不报错 —— 这是设计，不是 bug。",
     "install.title": "安装",
     "install.lead": "需要 Node.js、<code>pnpm</code> 和 <code>dsh</code> 命令 —— <code>dsh plugin</code> 底下转发给的就是 pnpm，pnpm 得先在 PATH 上。不用 clone，也不用构建。六个包要一次装齐 —— 其中一个是 profile 层，负责挂载另外五个。",
-    "install.a.title": "A. 你还没装过 harness",
-    "install.a.note": "第一条命令装的是 dsh 本身。这套界面会落到它自己的 profile 里：<code>~/.dsh/profiles/glass</code>。",
-    "install.b.title": "B. 你已经装了 harness",
-    "install.b.note": "先确认版本：<code>0.1.5-rc.2</code> 或 <code>0.1.6-alpha.2</code>，其它版本没测过。然后跑同一条 <code>add</code>，只是不必再装 harness。",
+    "install.step.title": "你已经装了 harness",
+    "install.step.note": "先确认版本：<code>0.1.5-rc.2</code> 或 <code>0.1.6-alpha.2</code>，其它版本没测过。",
     "install.tip1": "<b>挑一个没被占用的 profile 名。</b> 名字被占时，<code>add</code> 会叠到你已有的那个 profile 上，而不是新建。<code>glass</code> 只是示例。",
     "install.tip2": "<b>你现有的环境一个字都不动。</b> 界面住在新 profile 里：用 <code>dsh --profile glass</code> 启动它，原来的命令照旧。",
     "install.tip3": "<b>想卸掉：</b> 用 <code>dsh plugin --profile glass remove</code> 卸掉那六个包，或者直接删掉 profile 目录 —— macOS / Linux 上是 <code>~/.dsh/profiles/glass</code>，Windows 上是 <code>%USERPROFILE%\\.dsh\\profiles\\glass</code>。",
