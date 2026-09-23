@@ -20,12 +20,13 @@
     /* The centre window, cut by the fold rather than surrounded by it — that
        cut is what makes the wallpaper behind it read as a layer and not a
        backdrop. `--hang` is the one number behind the geometry: how far the
-       window's bottom edge dips past the fold. The headline's slack and the
-       black band's top pad are both derived from it. At 0.22 the first screen
-       holds about two thirds of the window (the header eats a little); the
-       point is that the window is legible before anyone scrolls. Capped by
-       width and by the gutter; free of any one-screen budget, which is what
-       lets it be this large. */
+       stage's bottom edge — the window plus the control card docked under it —
+       dips past the fold. The headline's slack and the black band's top pad are
+       both derived from it, and the pad is what leaves the card its room below
+       the window. At 0.22 the first screen holds about two thirds of the
+       window (the header eats a little); the point is that the window is
+       legible before anyone scrolls. Capped by width and by the gutter; free of
+       any one-screen budget, which is what lets it be this large. */
     --shot: min(1400px, 92vw, max(680px, calc((100svh - 240px) * 1.778)));
     --frameh: calc(var(--shot) * 9 / 16 + 34px);
     --hang: calc((var(--shot) * 9 / 16 + 34px) * 0.22);
@@ -193,9 +194,32 @@
   }
   .hero .sub b { color: var(--ink); font-weight: 560; }
 
-  /* The window, plus the control card that floats above it. The negative
-     bottom margin is the whole trick: it pulls the black band up under the
-     window, so the fold cuts it instead of the window sitting inside it. */
+  /* GitHub and Install, taken out of the header: the header keeps Release,
+     README and the language toggle, and the release's two doors sit under the
+     headline, where the eye already is. */
+  .cta { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .cta a {
+    font-size: 14px;
+    font-weight: 560;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 10px 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(10, 16, 27, .42);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color .2s, background .2s;
+  }
+  .cta a:hover { border-color: rgba(255, 255, 255, .3); background: rgba(10, 16, 27, .78); }
+  /* The accent one is the release's own door — the same treatment the star
+     link at the foot of the page gets. */
+  .cta .accent { border-color: var(--accent); background: rgba(9, 14, 24, .5); }
+  .cta .accent:hover { background: rgba(9, 14, 24, .85); }
+
+  /* The window, plus the control card docked under it. The negative bottom
+     margin is the whole trick: it pulls the black band up under the window, so
+     the fold cuts it instead of the window sitting inside it. */
   .stagebox {
     position: relative;
     flex: 0 0 auto;
@@ -270,20 +294,19 @@
   .plate img.is-on,
   .plate video.is-on { opacity: 1; }
 
-  /* The switcher is a control card pinned just above the window's top edge,
-     where a floating toolbar would sit. It shows the wallpapers themselves —
+  /* The switcher is a control card docked under the window's bottom edge, the
+     way a dock sits under a picture. It shows the wallpapers themselves —
      rendered with no interface in them — not crops of the window shots, which
-     only ever showed a wallpaper through the glass. Being out of the flow, it
-     costs the window nothing. */
+     only ever showed a wallpaper through the glass. It is in the flow, so it
+     is part of the stage: the black band below is measured off this card, not
+     off the window. */
   .wallbar {
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 14px);
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 12px;
+    width: fit-content;
     max-width: 100%;
+    margin: 14px auto 0;
     padding: 8px 14px;
     border: 1px solid var(--line);
     border-radius: 999px;
@@ -350,11 +373,12 @@
     position: relative;
     z-index: 2;
     background: #05080e;
-    /* Measured, not reasoned: the window's bottom edge sits exactly `--hang`
+    /* Measured, not reasoned: the stage's bottom edge sits exactly `--hang`
        below the fold, because a negative bottom margin on a flex item shrinks
        the hero's content height instead of lifting the band that follows it —
        the band's top stays on the fold. (Block layout would have moved it.) So
-       one `--hang` of pad, then air before the first section. */
+       one `--hang` of pad, then air before the first section: the pad is the
+       space the window's cut and the card under it hang into. */
     padding-top: calc(var(--hang) + clamp(20px, 4vh, 52px));
   }
 
@@ -571,10 +595,8 @@
 <header class="top">
   <div class="brand"><span class="mark"></span>Beyond Glass<span class="ver">v0.1.2</span></div>
   <nav>
-    <a href="https://github.com/LeoEthanZ/dsh-beyond-glass">GitHub</a>
     <a href="https://github.com/LeoEthanZ/dsh-beyond-glass/releases/tag/v0.1.2" data-i18n="nav.release">Release</a>
     <a href="https://github.com/LeoEthanZ/dsh-beyond-glass/blob/main/README.md" data-i18n="nav.readme">README</a>
-    <a href="#install" data-i18n="nav.install">Install</a>
     <button id="lang" type="button" aria-pressed="false">中文</button>
   </nav>
 </header>
@@ -584,17 +606,13 @@
     <div class="head">
       <h1 data-i18n="hero.h1">A glass shell for DeepSeek Harness</h1>
       <p class="sub" data-i18n="hero.sub">Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.</p>
+      <div class="cta">
+        <a href="https://github.com/LeoEthanZ/dsh-beyond-glass">GitHub</a>
+        <a class="accent" href="#install" data-i18n="hero.install">Install</a>
+      </div>
     </div>
 
     <div class="stagebox">
-      <div class="wallbar" id="wallbar" role="group" aria-label="Wallpapers">
-        <nav class="thumbs" id="rail"></nav>
-        <div class="now">
-          <b id="wname">Deep Ocean</b>
-          <span class="pos" id="wpos">1 / 9</span>
-        </div>
-      </div>
-
       <div class="frame" id="frame">
         <div class="bar">
           <i></i><i></i><i></i>
@@ -605,6 +623,14 @@
           <img id="shotA" alt="" decoding="async" fetchpriority="high">
           <img id="shotB" alt="" decoding="async">
           <video id="hero" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+        </div>
+      </div>
+
+      <div class="wallbar" id="wallbar" role="group" aria-label="Wallpapers">
+        <nav class="thumbs" id="rail"></nav>
+        <div class="now">
+          <b id="wname">Deep Ocean</b>
+          <span class="pos" id="wpos">1 / 9</span>
         </div>
       </div>
     </div>
@@ -876,7 +902,7 @@ const COPY = {
   en: {
     "nav.release": "Release",
     "nav.readme": "README",
-    "nav.install": "Install",
+    "hero.install": "Install",
     "hero.h1": "A glass shell for DeepSeek Harness",
     "hero.sub": "Foldable sidebars, a launcher with a data island, nine wallpapers — as six packages. The frame is the author's own setup; the field around it is live.",
     "kind.fluid": "procedural fluid · WebGL, drawn locally",
@@ -914,7 +940,7 @@ const COPY = {
   zh: {
     "nav.release": "版本发布",
     "nav.readme": "使用说明",
-    "nav.install": "安装",
+    "hero.install": "安装",
     "hero.h1": "deepseek-harness 的三栏玻璃外壳",
     "hero.sub": "可折叠的侧栏、带数据仪表的启动台、九张壁纸 —— 分装成六个包。中间这一帧取自作者自己的环境，四周是同一张壁纸，而且是真的在动。",
     "kind.fluid": "程序化流体 · 本地 WebGL 渲染",
