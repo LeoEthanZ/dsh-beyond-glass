@@ -1,29 +1,24 @@
-# v0.1.2
+# v0.1.3
 
-Three fixes for what a stranger's install sees. Content update: the six packages
-keep the versions they had in v0.1.1, so install from this tag rather than that
-one — a `v0.1.2` URL supersedes `v0.1.1` outright.
+One fix on top of v0.1.2. Content update: the six packages keep the versions
+they had in v0.1.2, so install from this tag rather than that one — a `v0.1.3`
+URL supersedes `v0.1.2` outright.
 
 ## What changed
 
-- **The nine launcher cards are one size now.** A card is a `<button>`, and a
-  button is sized to its contents: with the description on a single nowrap line,
-  a card whose description was long outgrew its track — 318px inside a 223.8px
-  column — overlapping the card beside it, while the ellipsis never appeared.
-  The cards now fill their cell, so the covers line up and long descriptions
-  clip where they should.
-- **Settings opens as a full-window sheet.** The sheet renders inside the left
-  column, and that column carried the glass `backdrop-filter` — which makes an
-  element the containing block for its own fixed-position descendants. The sheet
-  was therefore held to the column's box: 264×884 inside a 1440×900 window. The
-  refraction now rides a pseudo-element, so the column no longer captures it.
-- **The skin is dark on a light machine.** Theme preference defaults to `system`,
-  so a light-mode host turned the shell light and both side columns came out
-  white. The skin now reads `system` as dark. Picking Light or Dark in Appearance
-  still does exactly what it says.
+- **The settings sheet answers clicks again.** It renders inside the left
+  column, and the glass refracted layer makes that column a stacking context —
+  so the sheet, a fixed-position descendant, was painted at the column's own
+  level. With the launcher behind it the cards sat on top: measured on a live
+  profile, the hit test at the sheet's centre returned an app card, and an
+  unforced click on a nav cell timed out after 3s. The column now takes a level
+  above the frame's own ladder (`handle` 11, `overlayLayer` 20) while a dialog
+  is in it, so the sheet clears every column. With no dialog open the rule does
+  not match and the closed state stays pixel-identical.
 
-Everything else is v0.1.1: the three-column glass shell, the wallpaper column,
-the immersive dashboard, and the nine-card catalog.
+Everything else is v0.1.2: one card width, the full-window settings sheet, dark
+on a light machine, and v0.1.1's three-column glass shell, wallpaper column,
+immersive dashboard, and nine-card catalog.
 
 ## Files
 
@@ -55,23 +50,24 @@ removes cleanly.
 Six tarballs, fetched by their public URLs into a fresh `DSH_HOME` over the
 published `@deepseek-ai/dsh@latest`:
 
+- **The settings sheet takes a click** — the overlay measures 1440×900 at 0,0
+  over a 1440×900 viewport, the hit test at its centre returns an element inside
+  the sheet, and a real click on a nav cell lands (no interception) while the
+  launcher sits behind it.
 - **The nine cards render at one width** — 223.8px each, one per grid track,
   zero overlapping pairs — and every cover measures 223.8×125.9 (16:9). The
   three long descriptions clip.
-- **The settings sheet measures 1440×900 at 0,0** — full window, and the column
-  it renders inside no longer carries a containing-block property.
 - **On a host set to light mode the shell still renders dark** — `body` at
-  `rgb(5,8,14)`, `color-scheme: dark`, with the same result on a dark host.
-- 9 cards rendered, names and cover presets matching the catalog file, all nine
-  covers served `200 image/webp`, no failed requests.
+  `rgb(5,8,14)`, `color-scheme: dark`, with the same result on a dark host. The
+  column carries no `backdrop-filter` of its own; the refraction's
+  `blur(28px) saturate(1.8)` and gradient ride the layer behind it.
 - `/trending` `200`, `/weather` `200`, `/workbench/covers/*.webp` `200`, and a
   made-up path under `/workbench/` `404`.
-- Glass tokens resolve in read-only mode (`blur(28px) saturate(1.8)` plus the
-  gradient and hairline on both side columns) — the packages carry their own
-  token sheet.
+- 9 cards rendered, names and cover presets matching the catalog file, all nine
+  covers served `200 image/webp`, no failed requests — each loading at its
+  natural 960×540.
 - The dashboard's four slots all render — 热点 with live headlines, TOKEN 用量
-  with a count, 今日 with a real city and temperature, 待办 with its empty state
-  — and all nine cover images load at their natural 960×540.
+  with a count, 今日 with a real city and temperature, 待办 with its empty state.
 
 ## Known limits
 
@@ -91,23 +87,21 @@ package.
 
 ---
 
-# v0.1.2（中文）
+# v0.1.3（中文）
 
-这一版修的是「换个干净环境装一遍才会看见的三个毛病」。内容更新：六个包的版本号与 v0.1.1 相同，
-所以请从本 tag 安装 —— `v0.1.2` 的地址完全取代 `v0.1.1`。
+这一版只有一处改动，叠在 v0.1.2 上。六个包的版本号跟 v0.1.2 一样，所以请从本 tag 安装 ——
+`v0.1.3` 的地址完全取代 `v0.1.2`。
 
 ## 改了什么
 
-- **九张卡现在一样宽。** 应用卡本身是 `<button>`，按钮的宽度由内容定：说明文字是一行不折行的，
-  说明一长，卡片就撑出自己的格子（223.8px 的轨道里长出 318px），压到旁边那张上，省略号也一直
-  不生效。现在卡片撑满格子，封面排齐，过长的说明正常截断。
-- **设置是整屏浮层，不再被左边那栏框住。** 设置面板渲染在左栏内部，而左栏带着玻璃那层
-  `backdrop-filter` —— 元素一旦用上它，就成了自己内部 fixed 定位子元素的包含块，面板因此被限在
-  左栏里：1440×900 的窗口里只有 264×884。现在折射效果挪到伪元素上，左栏不再参与定位。
-- **系统是浅色，界面照样是深色。** 主题默认跟随系统，浅色机器上外壳就跟着变白，两列侧栏全白。
-  现在这套皮肤一律把「跟随系统」当深色；外观里手动选浅色或深色，仍然选了就生效。
+- **设置面板又能点了。** 设置浮层渲染在左栏内部，而玻璃那层折射让左栏成了层叠上下文，浮层作为它的
+  fixed 子元素，就跟着停在「左栏那一层」。启动台在背后时，应用卡压在浮层上：实机读数是，浮层中心
+  命中的是应用卡，对导航按钮做一次不加 force 的真实点击，3 秒超时。现在左栏在持有浮层时抬到框架
+  自己的层级阶梯之上（`handle` 是 11，`overlayLayer` 是 20），浮层就压得住每一列；没有浮层时这条
+  规则不匹配，关闭态逐像素与之前一致。
 
-其余与 v0.1.1 相同：三栏玻璃外壳、壁纸栏、沉浸模式数据仪表，以及那九张卡的清单。
+其余与 v0.1.2 相同：卡片一样宽、设置整屏、浅色系统下界面仍是深色，以及 v0.1.1 的三栏玻璃外壳、
+壁纸栏、沉浸模式仪表和那九张卡。
 
 ## 六个包
 
@@ -131,14 +125,14 @@ package.
 harness 本体，也能干净卸载。
 
 **干净安装上的实测**：六个 tarball 走公网地址装进全新 `DSH_HOME`，宿主是 npm `latest` 的官方包 ——
-九张卡宽度一致（223.8px，各占一个轨道），没有互相压叠，九张封面都是 223.8×125.9（16:9），
-三段过长的说明正常截断；设置浮层 1440×900、起点 0,0，整屏铺满，它所在的那一栏上再没有会兜住
-它的属性；宿主系统设成浅色时界面仍是深色（`body` 为 `rgb(5,8,14)`，`color-scheme: dark`），
-深色宿主下同样。上一版验过的四项也复算过：启动台渲染 9 张卡，名称与封面 preset 与清单一致，
-九张封面全部 `200 image/webp`；`/trending`、`/weather`、`/workbench/covers/*.webp` 均 `200`，
-伪造路径 `404`；只读模式下玻璃令牌有值（两列侧栏都是 `blur(28px) saturate(1.8)` + 渐变 +
-发丝描边）；仪表四个卡位全部正常渲染（热点是真标题、TOKEN 用量有数字、今日是真城市与温度、
-待办显示空态），九张封面图全部以原尺寸 960×540 加载。
+设置浮层点得动：整屏 1440×900、起点 0,0，浮层中心命中的是浮层内部的元素，启动台就在背后时对导航
+按钮做真实点击也不被拦；九张卡宽度一致（223.8px，各占一个轨道），没有互相压叠，九张封面都是
+223.8×125.9（16:9），三段过长的说明正常截断；宿主系统设成浅色时界面仍是深色（`body` 为
+`rgb(5,8,14)`，`color-scheme: dark`），深色宿主下同样，左栏自己不背 `backdrop-filter`，折射的
+`blur(28px) saturate(1.8)` 与渐变在它后面那层上；`/trending`、`/weather`、
+`/workbench/covers/*.webp` 均 `200`，伪造路径 `404`；启动台渲染 9 张卡，名称与封面 preset 与
+清单一致，九张封面全部 `200 image/webp`、以原尺寸 960×540 加载；仪表四个卡位全部正常渲染
+（热点是真标题、TOKEN 用量有数字、今日是真城市与温度、待办显示空态）。
 
 **已知限制**：harness 版本若新增一行、恰好占了这套界面注册的位置，会撞车 —— 客户端以一行
 `Failed to load plugins` 报错，其余不渲染，要改的是这个发行包。harness 包约 26 MB，
