@@ -52,8 +52,8 @@ published `@deepseek-ai/dsh@latest`:
 
 - **The settings sheet takes a click** — the overlay measures 1440×900 at 0,0
   over a 1440×900 viewport, the hit test at its centre returns an element inside
-  the sheet, and a real click on a nav cell lands (no interception) while the
-  launcher sits behind it.
+  the sheet, and with the launcher behind it a real click on another nav cell
+  moves the selection (0 → 1 of 4).
 - **The nine cards render at one width** — 223.8px each, one per grid track,
   zero overlapping pairs — and every cover measures 223.8×125.9 (16:9). The
   three long descriptions clip.
@@ -125,9 +125,9 @@ package.
 harness 本体，也能干净卸载。
 
 **干净安装上的实测**：六个 tarball 走公网地址装进全新 `DSH_HOME`，宿主是 npm `latest` 的官方包 ——
-设置浮层点得动：整屏 1440×900、起点 0,0，浮层中心命中的是浮层内部的元素，启动台就在背后时对导航
-按钮做真实点击也不被拦；九张卡宽度一致（223.8px，各占一个轨道），没有互相压叠，九张封面都是
-223.8×125.9（16:9），三段过长的说明正常截断；宿主系统设成浅色时界面仍是深色（`body` 为
+设置浮层点得动：整屏 1440×900、起点 0,0，浮层中心命中的是浮层内部的元素，启动台就在背后时点另一格
+导航也会真的切换（选中格 0 → 1，共 4 格）；九张卡宽度一致（223.8px，各占一个轨道），没有互相压叠，
+九张封面都是 223.8×125.9（16:9），三段过长的说明正常截断；宿主系统设成浅色时界面仍是深色（`body` 为
 `rgb(5,8,14)`，`color-scheme: dark`），深色宿主下同样，左栏自己不背 `backdrop-filter`，折射的
 `blur(28px) saturate(1.8)` 与渐变在它后面那层上；`/trending`、`/weather`、
 `/workbench/covers/*.webp` 均 `200`，伪造路径 `404`；启动台渲染 9 张卡，名称与封面 preset 与
