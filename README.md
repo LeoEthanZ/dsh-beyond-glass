@@ -99,12 +99,12 @@ All six packages go in **one** `add`, because only the `harness` package is a pr
 mounts the other five. Installing them one at a time works too, but only the last one is a layer
 and the rest degrade to plain dependencies.
 
-`BASE` is one Release's download prefix. Each block below sets it in its own shell's syntax,
-immediately before the command that uses it, so a block is complete on its own and can be copied
-whole.
+Every command below is written on a single line, so pasting it line by line works exactly as
+well as pasting the block whole.
 
-Every command below is given twice, `bash`/`zsh` and PowerShell. Take the one your shell speaks —
-they are not interchangeable.
+Each command is given twice: once for `bash`/`zsh`, once for Windows. The Windows block calls
+`dsh.cmd` and uses no shell-specific syntax at all, so it runs unchanged in `cmd.exe` and in
+PowerShell alike — bare `dsh` does not, because a default PowerShell policy blocks `dsh.ps1`.
 
 ### No harness yet
 
@@ -113,51 +113,34 @@ they are not interchangeable.
 ```sh
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3
+# create the profile first — delete it beforehand if it already exists
+# (plain add leaves the profile with no app layer)
+dsh --profile glass --from-default-profile web --dump-config
 
-# create the profile first (plain add leaves it with no app layer)
-dsh --profile glass --from-default-profile web --dump-config > /dev/null
+dsh plugin --profile glass add   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-harness-0.1.6-alpha.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-layout-0.1.5-rc.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
 
-dsh plugin --profile glass add \
-  $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
-  $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
-  $BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz \
-  $BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz \
-  $BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz \
-  $BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
-
-dsh --profile glass
+dsh --profile glass --port 0
 ```
 
-**Windows — PowerShell**
+**Windows — `cmd.exe` and PowerShell**
 
-```powershell
+```bat
 npm install -g @deepseek-ai/dsh@0.1.5-rc.2
 
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3"
+# create the profile first — delete it beforehand if it already exists
+# (plain add leaves the profile with no app layer)
+dsh.cmd --profile glass --from-default-profile web --dump-config
 
-# create the profile first (plain add leaves it with no app layer)
-dsh --profile glass --from-default-profile web --dump-config > $null
+dsh.cmd plugin --profile glass add   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-harness-0.1.6-alpha.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-layout-0.1.5-rc.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
 
-dsh plugin --profile glass add `
-  "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
-  "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
-  "$BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz" `
-  "$BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz" `
-  "$BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" `
-  "$BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
-
-dsh --profile glass
+dsh.cmd --profile glass --port 0
 ```
 
-Each backtick is PowerShell's line continuation, and it has to be the last character on its line —
-one space after it and the command breaks. In `cmd.exe` neither block works as written; use
-PowerShell.
-
-The `--from-default-profile web` line creates `~/.dsh/profiles/glass`
-(`%USERPROFILE%\.dsh\profiles\glass` on Windows) carrying the same app layer a stock `dsh web`
-profile has; `add` then puts the six packages on top. `glass` is just a profile name — pick another
-if you like.
+The `--from-default-profile web` step prints the composed profile tree — that is expected, and it
+is why no block redirects output (every shell spells redirection differently). That line creates
+`~/.dsh/profiles/glass` (`%USERPROFILE%\.dsh\profiles\glass` on Windows) carrying the same app
+layer a stock `dsh web` profile has; `add` then puts the six packages on top. `glass` is just a
+profile name — pick another if you like.
 
 ### The harness is already installed
 
@@ -172,44 +155,34 @@ If it matches, install — exactly as above, minus the harness install:
 **macOS / Linux — `bash`, `zsh`**
 
 ```sh
-BASE=https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3
+# create the profile first — delete it beforehand if it already exists
+# (plain add leaves the profile with no app layer)
+dsh --profile glass --from-default-profile web --dump-config
 
-# create the profile first (plain add leaves it with no app layer)
-dsh --profile glass --from-default-profile web --dump-config > /dev/null
+dsh plugin --profile glass add   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-harness-0.1.6-alpha.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-layout-0.1.5-rc.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz   https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
 
-dsh plugin --profile glass add \
-  $BASE/beyond-glass-harness-0.1.6-alpha.2.tgz \
-  $BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz \
-  $BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz \
-  $BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz \
-  $BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz \
-  $BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz
-
-dsh --profile glass
+dsh --profile glass --port 0
 ```
 
-**Windows — PowerShell**
+**Windows — `cmd.exe` and PowerShell**
 
-```powershell
-$BASE = "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3"
+```bat
+# create the profile first — delete it beforehand if it already exists
+# (plain add leaves the profile with no app layer)
+dsh.cmd --profile glass --from-default-profile web --dump-config
 
-# create the profile first (plain add leaves it with no app layer)
-dsh --profile glass --from-default-profile web --dump-config > $null
+dsh.cmd plugin --profile glass add   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-harness-0.1.6-alpha.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-layout-0.1.5-rc.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz"   "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" "https://github.com/LeoEthanZ/dsh-beyond-glass/releases/download/v0.1.3/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
 
-dsh plugin --profile glass add `
-  "$BASE/beyond-glass-harness-0.1.6-alpha.2.tgz" `
-  "$BASE/beyond-glass-ui-layout-0.1.5-rc.2.tgz" `
-  "$BASE/beyond-glass-ui-sidebar-0.1.5-rc.2.tgz" `
-  "$BASE/beyond-glass-ui-sidebar-right-0.1.5-rc.2.tgz" `
-  "$BASE/deepseek-ai-dsh-client-ui-wallpaper-0.1.2-rc.1.tgz" `
-  "$BASE/deepseek-ai-dsh-client-ui-workbench-0.1.2-rc.1.tgz"
-
-dsh --profile glass
+dsh.cmd --profile glass --port 0
 ```
 
 **This UI installs into a profile of its own.** Your existing profile — same plugins, same
 settings — is not touched, and your `dsh` keeps working the way it did. Reach this UI with
 `dsh --profile glass`; keep typing your usual command to reach yours.
+
+The last line prints the address to open — `dsh web: http://127.0.0.1:<port>/?token=...`. `--port 0`
+lets the OS pick a free port, so this profile never collides with a `dsh web` you already have
+running. Your own profile keeps its own port; the two coexist.
 
 Three things to watch:
 
@@ -226,19 +199,13 @@ Three things to watch:
 **macOS / Linux — `bash`, `zsh`**
 
 ```sh
-dsh plugin --profile glass remove \
-  @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar \
-  @beyond-glass/ui-sidebar-right \
-  @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
+dsh plugin --profile glass remove   @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar   @beyond-glass/ui-sidebar-right @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
 ```
 
-**Windows — PowerShell**
+**Windows — `cmd.exe` and PowerShell**
 
-```powershell
-dsh plugin --profile glass remove `
-  @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar `
-  @beyond-glass/ui-sidebar-right `
-  @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
+```bat
+dsh.cmd plugin --profile glass remove   @beyond-glass/harness @beyond-glass/ui-layout @beyond-glass/ui-sidebar   @beyond-glass/ui-sidebar-right @deepseek-ai/dsh-client-ui-wallpaper @deepseek-ai/dsh-client-ui-workbench
 ```
 
 That removes `dsh --profile glass`; delete `~/.dsh/profiles/glass`
