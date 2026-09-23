@@ -200,14 +200,10 @@
     font-weight: 560;
     line-height: 1.35;
     color: var(--ink);
-    /* Two stops, both tight — the wide glow is gone. An 18px halo under a 20px
-       line is a smudge around the glyphs, and it was doing less for the
-       reading than it cost: the eye compares a stroke against what sits 1.5px
-       from it, and darkness spread over 18px barely reaches there. Pulled in
-       to 2px and 4px it reads higher on every one of the nine wallpapers
-       (brightest: 4.28:1, was 3.64:1); taking the shadow off entirely is not
-       available — that leaves 1.91:1. */
-    text-shadow: 0 1px 2px rgba(4, 7, 13, 1), 0 1px 4px rgba(4, 7, 13, .85);
+    /* Soft and light: a wash under the line rather than a shadow behind it.
+       Nothing darker than .55, and 10px of falloff so the halo never draws an
+       edge of its own. */
+    text-shadow: 0 1px 3px rgba(4, 7, 13, .55), 0 2px 10px rgba(4, 7, 13, .35);
   }
   .hero .sub {
     margin: 0 auto;
